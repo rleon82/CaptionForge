@@ -2,7 +2,7 @@
 
 > **Cel:** Podłączenie Google Gemini API do generatora opisów, zastępując mock-owe szablony prawdziwym AI.
 > **Podejście:** Prototyp edukacyjny – klucz API bezpośrednio w kodzie JS (frontend).
-> **Klucz API:** `AIzaSyCwJ1BAQiH68FhzXFJYq2VtcB7y0o-uAr8`
+> **Klucz API:** 
 
 ---
 
@@ -22,7 +22,7 @@ Dodaj stałą `CONFIG` z kluczem API i parametrami modelu:
 
 ```javascript
 const CONFIG = {
-    geminiApiKey: 'AIzaSyCwJ1BAQiH68FhzXFJYq2VtcB7y0o-uAr8',
+    geminiApiKey: 
     geminiModel: 'gemini-2.0-flash',
     temperature: 0.8
 };
