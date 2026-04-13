@@ -4,11 +4,13 @@
 
 Landing page + działający generator oparty na Gemini 2.5 Flash z automatycznym fallbackiem na szablony mockowe.
 
-> **Wersja:** 1.1 · **Status:** MVP z integracją AI · **Data:** Marzec 2026
+> **Wersja:** 1.2 · **Status:** MVP z integracją AI · **Data:** Kwiecień 2026
 
 ---
 
 ## 📑 Spis treści dokumentacji
+
+### Dokumentacja projektu (`captionforge/docs/`)
 
 | Dokument | Opis |
 |----------|------|
@@ -17,6 +19,23 @@ Landing page + działający generator oparty na Gemini 2.5 Flash z automatycznym
 | 📖 **[technical-documentation.md](technical-documentation.md)** | Pełna dokumentacja techniczna: architektura systemu, Strategy Pattern, moduły JS, integracja Gemini API, diagramy Mermaid |
 | 🎯 **[Job_To_Be_Done.md](Job_To_Be_Done.md)** | Analiza JTBD: persony (Kasia — content creator, Tomek — freelancer SM), 10 Job Snapshotów, ryzyka biznesowe, MVP Scope |
 | 🗺️ **[User_Journey_Map.md](User_Journey_Map.md)** | Ścieżka użytkownika: Journey MVP i docelowa, Gap Analysis, metryki konwersji, rekomendacje UX |
+
+### Plany implementacyjne (`plans/`)
+
+| Plan | Opis | Status |
+|------|------|--------|
+| 🔍 **[captionforge-audit-i-roadmap.md](../../plans/captionforge-audit-i-roadmap.md)** | Fullaudit kodu + plany dalszego rozwoju (9 planów w 4 etapach) | ✅ Gotowy |
+| 🚀 **[captionforge-new-features.md](../../plans/captionforge-new-features.md)** | Historia, eksport TXT, licznik znaków, progress bar, dark mode | ✅ Wdrożony |
+| 🔌 **[gemini-api-integration.md](../../plans/gemini-api-integration.md)** | Integracja Google Gemini 2.5 Flash — Strategy Pattern | ✅ Wdrożony |
+| 🧹 **[technical-documentation-cleanup.md](../../plans/technical-documentation-cleanup.md)** | Plan usunięcia duplikatów z `technical-documentation.md` | 📋 Do realizacji |
+
+### Reguły agenta AI (`.kilocode/rules/`)
+
+| Plik | Opis |
+|------|------|
+| 🤖 **[who-am-i.md](../../.kilocode/rules/who-am-i.md)** | Persona agenta: SaaS Architect & Business Auditor; dostępne workflows (ICE, JTBD, MVP Scoping, GTM…) |
+| 📐 **[dev-plan-workflow.md](../../.kilocode/rules/dev-plan-workflow.md)** | WF_Dev_Plan — wzorzec tworzenia atomowych planów implementacyjnych (szablon, kryteria odrzucenia, zapis w `plans/`) |
+| ⚙️ **[dev-coding-rules.md](../../.kilocode/rules/dev-coding-rules.md)** | Obowiązkowe standardy kodowania: Next.js App Router, TypeScript strict, Tailwind CSS, wzorce SC/CC, weryfikacja `tsc + lint + build` |
 
 ---
 
@@ -124,21 +143,32 @@ python3 -m http.server 8080
 ## 📁 Struktura plików
 
 ```
-captionforge/
-├── index.html              # Główna strona – landing + generator + historia
-├── css/
-│   └── styles.css          # Wszystkie style, responsywność, dark/light mode
-├── js/
-│   ├── app.js              # Nawigacja, animacje, FAQ, inicjalizacja modułów
-│   ├── generator.js        # Logika generatora – Strategy Pattern (Gemini + mock)
-│   ├── templates.js        # Baza szablonów mockowych i hasztagów (fallback)
-│   └── features.js         # ThemeManager, ProgressBar, HistoryManager, ExportManager, CharCounter
-└── docs/
-    ├── README.md            # Ten plik
-    ├── plan.md              # Oryginalny plan techniczny i design system
-    ├── technical-documentation.md  # Pełna dokumentacja techniczna
-    ├── Job_To_Be_Done.md    # Analiza JTBD, persony, ryzyka
-    └── User_Journey_Map.md  # Ścieżka użytkownika, gap analysis
+architekt-biznesu-saas/
+├── .kilocode/
+│   └── rules/
+│       ├── who-am-i.md             # Persona agenta — SaaS Architect & Business Auditor
+│       ├── dev-plan-workflow.md    # WF_Dev_Plan — wzorzec tworzenia planów implementacyjnych
+│       └── dev-coding-rules.md    # Dev_Coding_Rules — standardy Next.js/React/TS/Tailwind
+├── plans/
+│   ├── captionforge-audit-i-roadmap.md    # Audit kodu + 9-planowy roadmap rozwoju
+│   ├── captionforge-new-features.md       # Plan nowych funkcji (historia, dark mode, eksport…)
+│   ├── gemini-api-integration.md          # Integracja Gemini API — Strategy Pattern
+│   └── technical-documentation-cleanup.md # Plan czyszczenia duplikatów w tech docs
+└── captionforge/
+    ├── index.html              # Główna strona – landing + generator + historia
+    ├── css/
+    │   └── styles.css          # Wszystkie style, responsywność, dark/light mode
+    ├── js/
+    │   ├── app.js              # Nawigacja, animacje, FAQ, inicjalizacja modułów
+    │   ├── generator.js        # Logika generatora – Strategy Pattern (Gemini + mock)
+    │   ├── templates.js        # Baza szablonów mockowych i hasztagów (fallback)
+    │   └── features.js         # ThemeManager, ProgressBar, HistoryManager, ExportManager, CharCounter
+    └── docs/
+        ├── README.md            # Ten plik
+        ├── plan.md              # Oryginalny plan techniczny i design system
+        ├── technical-documentation.md  # Pełna dokumentacja techniczna
+        ├── Job_To_Be_Done.md    # Analiza JTBD, persony, ryzyka
+        └── User_Journey_Map.md  # Ścieżka użytkownika, gap analysis
 ```
 
 ---
@@ -216,13 +246,15 @@ const CONFIG = {
 | Brak połączenia z internetem | Toast: "❌ Brak połączenia z internetem." |
 | Inny błąd Gemini API | Toast z opisem błędu |
 
-> ⚠️ **Uwaga bezpieczeństwa:** Klucz API w `CONFIG` jest widoczny w kodzie front-endu. Akceptowalne wyłącznie w fazie prototypu. Przed produkcją wymagany jest backend proxy (np. Edge Function).
+> ⚠️ **Uwaga bezpieczeństwa:** Klucz API w `CONFIG` jest widoczny w kodzie front-endu. Akceptowalne wyłącznie w fazie prototypu. Przed produkcją wymagany jest backend proxy (np. Edge Function / Cloudflare Worker). Szczegóły: [Plan 1 w audycie](../../plans/captionforge-audit-i-roadmap.md).
 
 ---
 
 ## 🛠️ Stack technologiczny
 
-| Warstwa | Technologia | Uzasadnienie |
+> **Uwaga:** Obecny stack to Vanilla HTML/CSS/JS (prototyp edukacyjny). Docelowy stack produkcyjny (wg [`dev-coding-rules.md`](../../.kilocode/rules/dev-coding-rules.md)) to **Next.js 14+ App Router + React 18 + TypeScript strict + Tailwind CSS v3**.
+
+| Warstwa | Technologia (obecna) | Uzasadnienie |
 |---------|-------------|-------------|
 | **Markup** | HTML5 semantyczny | Dostępność, SEO, zero budowania |
 | **Style** | CSS3 — Custom Properties, Flexbox, Grid | Dark mode przez `data-theme`, brak preprocesora |
@@ -242,16 +274,18 @@ Pełna analiza dostępna w dokumentacji:
 - **JTBD:** [Job_To_Be_Done.md](Job_To_Be_Done.md) — persony, 10 snapshotów, ryzyka, MVP Scope
 - **User Journey:** [User_Journey_Map.md](User_Journey_Map.md) — ścieżka MVP i docelowa, gap analysis
 - **Plan techniczny:** [plan.md](plan.md) — design system, kolory, architektura
+- **Audit kodu:** [captionforge-audit-i-roadmap.md](../../plans/captionforge-audit-i-roadmap.md) — 9 planów, czerwone flagi, zalecana ścieżka realizacji
 
 ### ICE Ranking:
 - **Impact:** 8/10 — duże zapotrzebowanie wśród twórców treści (5–50 opisów/tydzień)
 - **Confidence:** 6/10 — zatłoczony rynek, ale wyraźna nisza (social media + hasztagi z oceną zasięgu)
 - **Ease:** 7/10 — MVP zbudowany, Gemini API zintegrowane, brak backendu = szybki start
 
-### Kluczowe ryzyka:
-1. **Retencja po mock** — szablony powtarzają się po 3–4 użyciach (rozwiązane: integracja Gemini)
-2. **ChatGPT jako darmowy konkurent** — CaptionForge musi dać wartość ponad ChatGPT (specjalizacja, hasztagi, 1-click)
-3. **Sztuczny social proof** — "10K+ Twórców" bez dowodów (do zamiany na realne dane)
+### Kluczowe ryzyka (wg audytu):
+1. 🔴 **Klucz API Gemini hardkodowany w JS** — każdy może go wykraść z DevTools (→ Plan 1: Proxy)
+2. 🟡 **Brak sekcji Pricing** — strona obiecuje monetyzację, ale jej nie wyjaśnia (→ Plan 2)
+3. 🟡 **CSS monolityczny** (~2000 linii) — trudny w utrzymaniu (→ Plan 8)
+4. 🟡 **Globalne zmienne JS** — brak izolacji modułów (→ Plan 9)
 
 ---
 
@@ -273,33 +307,62 @@ Pełna analiza dostępna w dokumentacji:
 
 ## 🎯 Następne kroki (roadmap)
 
-### Faza 1 — Walidacja (priorytet)
+### ✅ Faza 1 — MVP (ukończona)
 - [x] Integracja z Google Gemini 2.5 Flash
 - [x] Dark/light mode
 - [x] Historia generacji (localStorage)
 - [x] Eksport do TXT
 - [x] ProgressBar z etapami
 - [x] Licznik znaków per platforma
-- [ ] Zebranie feedbacku od 10–20 content creatorów
-- [ ] Mierzenie retencji D1/D7
 
-### Faza 2 — Retencja
+### 🔴 Etap 2 — Bezpieczeństwo (KRYTYCZNY)
+- [ ] **Plan 1:** Backend proxy dla klucza Gemini API (Cloudflare Worker / Netlify Function)
+
+### 🟡 Etap 3 — UX & Konwersja (WAŻNE)
+- [ ] **Plan 2:** Sekcja Pricing (Free vs Pro) — między FAQ a CTA
+- [ ] **Plan 3:** Sekcja Testimonials / Social Proof — 3 cytaty mockowe
+- [ ] **Plan 4:** Animowany typewriter effect w Hero mockupie
+- [ ] **Plan 5:** Przycisk "Kopiuj opis + hasztagi jednym kliknięciem"
+- [ ] **Plan 6:** Inline edit wygenerowanych opisów (`contenteditable`)
+
+### 🟢 Etap 4 — Nowe Funkcje (DOBRE DLA UX)
+- [ ] **Plan 7:** Zapisane presety konfiguracji (localStorage, max 5)
+
+### 🔵 Etap 5 — Jakość Kodu (TECH DEBT)
+- [ ] **Plan 8:** Refaktor CSS — podział na 5 plików (`base.css`, `components.css` itp.)
+- [ ] **Plan 9:** Refaktor JS na ES Modules (`type="module"`, `import/export`)
+
+### Faza 6 — Retencja (po walidacji)
 - [ ] Backend proxy (Edge Function) — ukrycie klucza API
 - [ ] System kont użytkowników (Supabase Auth)
 - [ ] Persystencja historii w chmurze
 - [ ] Email sequences (onboarding + retention)
 
-### Faza 3 — Monetyzacja
+### Faza 7 — Monetyzacja (po retencji)
 - [ ] Płatności (Stripe Checkout)
 - [ ] Rate limiting + metering (Free → Pro)
 - [ ] Plan roczny z rabatem
 - [ ] Analityka (GA4 / Mixpanel)
 
-### Faza 4 — Skalowanie
+### Faza 8 — Skalowanie
 - [ ] Analiza trendów hasztagów (real-time API)
 - [ ] Integracja z Buffer/Later (harmonogram publikacji)
 - [ ] Eksport CSV/PDF
 - [ ] Wielojęzyczność ponad PL/EN
+
+> Pełna zalecana ścieżka realizacji z szacowanymi czasami: [captionforge-audit-i-roadmap.md](../../plans/captionforge-audit-i-roadmap.md)
+
+---
+
+## 🤖 Reguły agenta AI
+
+Projekt korzysta ze standaryzowanego systemu reguł dla agentów AI w folderze [`.kilocode/rules/`](../../.kilocode/rules/):
+
+| Reguła | Opis |
+|--------|------|
+| **`WF_Dev_Plan`** | Każdy plan implementacyjny musi być atomowy (1 sesja AI), używać szablonu z sekcjami-checkboxami i być zapisany w `plans/`. Szczegóły: [`dev-plan-workflow.md`](../../.kilocode/rules/dev-plan-workflow.md) |
+| **`Dev_Coding_Rules`** | Docelowy stack: Next.js App Router + React 18 + TypeScript strict + Tailwind CSS. Zakaz `any`, wzorce SC/CC, weryfikacja `tsc + lint + build`. Szczegóły: [`dev-coding-rules.md`](../../.kilocode/rules/dev-coding-rules.md) |
+| **`SaaS Architect Persona`** | Agent działa jako SaaS Architect & Business Auditor — Lean First, Distribution First, Solo-Dev Empathy. Dostępne workflows: ICE Ranking, JTBD, MVP Scoping, GTM Strategy i inne. Szczegóły: [`who-am-i.md`](../../.kilocode/rules/who-am-i.md) |
 
 ---
 
@@ -309,7 +372,10 @@ Pełna analiza dostępna w dokumentacji:
 - [Plan techniczny](plan.md) — design system, kolory, breakpointy
 - [Analiza JTBD](Job_To_Be_Done.md) — persony, potrzeby, ryzyka
 - [User Journey Map](User_Journey_Map.md) — ścieżki użytkownika, gap analysis, metryki
+- [Audit i Roadmap](../../plans/captionforge-audit-i-roadmap.md) — pełny audit kodu + 9 planów dalszego rozwoju
+- [Reguły kodowania](../../.kilocode/rules/dev-coding-rules.md) — standardy Next.js/React/TS/Tailwind
+- [Workflow planowania](../../.kilocode/rules/dev-plan-workflow.md) — wzorzec tworzenia planów implementacyjnych
 
 ---
 
-*Ostatnia aktualizacja: Marzec 2026*
+*Ostatnia aktualizacja: Kwiecień 2026*
