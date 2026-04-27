@@ -1,8 +1,8 @@
 # 📖 CaptionForge – Dokumentacja Techniczna
 
-> **Wersja:** 1.1
-> **Data:** Marzec 2026
-> **Status:** Faza projektowania – architektura do implementacji
+> **Wersja:** 2.0
+> **Data:** Kwiecień 2026
+> **Status:** Aplikacja Next.js 14 (App Router) — po migracji z Vanilla HTML/JS
 
 ---
 
@@ -10,7 +10,7 @@
 
 1. [Wprowadzenie](#1-wprowadzenie)
 2. [Architektura systemu](#2-architektura-systemu)
-3. [Plany implementacji](#3-plany-implementacji)
+3. [Moduły aplikacji](#3-moduły-aplikacji)
 4. [Integracja z Gemini API](#4-integracja-z-gemini-api)
 5. [Stack technologiczny](#5-stack-technologiczny)
 6. [Powiązana dokumentacja](#6-powiązana-dokumentacja)
@@ -19,11 +19,13 @@
 
 ## 1. Wprowadzenie
 
-**CaptionForge** to narzędzie webowe do generowania angażujących opisów i hasztagów pod posty w mediach społecznościowych. Produkt łączy landing page (prezentacja wartości) z działającym generatorem opartym na AI.
+**CaptionForge** to aplikacja webowa do generowania angażujących opisów i hasztagów pod posty w mediach społecznościowych. Produkt łączy landing page (prezentacja wartości) z działającym generatorem opartym na AI (Google Gemini).
 
-> **Propozycja wartości:** Wygeneruj spersonalizowany opis i hasztagi do posta w 10 sekund – dopasowane do niszy, tonu głosu i platformy.
+> **Propozycja wartości:** Wygeneruj spersonalizowany opis i hasztagi do posta w 10 sekund — dopasowane do niszy, tonu głosu i platformy.
 
 Zakres funkcjonalny, persony użytkowników i szczegółowa strategia produktowa opisane są w dokumentach linkowanych w sekcji [Powiązana dokumentacja](#6-powiązana-dokumentacja).
+
+> **Historia:** Pierwsza wersja MVP (Vanilla HTML/CSS/JS) znajduje się w folderze [`vanilla web/`](../vanilla%20web) i jest zachowana jako referencja. Obecna implementacja produkcyjna to Next.js 14 — dokumentacja poniżej opisuje właśnie ją.
 
 ---
 
@@ -32,287 +34,264 @@ Zakres funkcjonalny, persony użytkowników i szczegółowa strategia produktowa
 ### 2.1 Struktura plików
 
 ```
-captionforge/
-├── index.html              # Główna strona – landing + generator + historia
-├── css/
-│   └── styles.css          # Wszystkie style, responsywność, dark mode, animacje
-├── js/
-│   ├── app.js              # Nawigacja, animacje, FAQ, inicjalizacja modułów
-│   ├── generator.js        # Logika generatora – Strategy Pattern + GeneratorUI
-│   ├── templates.js        # Baza szablonów mockowych i hasztagów
-│   └── features.js         # Nowe moduły: ThemeManager, HistoryManager, ExportManager, ProgressBar
-└── docs/
-    ├── technical-documentation.md  # Ten plik
-    ├── README.md                   # Szybki start
-    ├── plan.md                     # Oryginalny plan i design system
-    ├── Job_To_Be_Done.md           # Analiza JTBD i persony
-    └── User_Journey_Map.md         # Ścieżka użytkownika i gap analysis
+code/
+├── .env.local                  # GEMINI_API_KEY (NIE commitować)
+├── next.config.mjs             # reactStrictMode: true
+├── tailwind.config.ts          # darkMode: ["class", '[data-theme="dark"]']
+├── tsconfig.json               # strict + noUncheckedIndexedAccess
+├── postcss.config.mjs
+├── package.json                # Next 14.2, React 18, Zod 3
+└── src/
+    ├── app/
+    │   ├── layout.tsx          # Root layout + anti-FOUC script
+    │   ├── page.tsx            # Server Component — landing
+    │   ├── globals.css         # CSS vars (design tokens) + Tailwind
+    │   └── api/generate/
+    │       └── route.ts        # POST — proxy do Gemini + rate limit + Zod
+    ├── components/
+    │   ├── ui/                 # Button, ThemeToggle, ProgressBar, Toast
+    │   └── features/
+    │       ├── navbar.tsx, hero.tsx, features-grid.tsx,
+    │       ├── how-it-works.tsx, faq.tsx, cta-bottom.tsx, footer.tsx
+    │       ├── generator/      # GeneratorSection (CC) + Form + Results
+    │       └── history/        # HistoryPanel + HistoryEntry
+    ├── hooks/
+    │   ├── useTheme.ts         # Dark/light mode hook
+    │   └── useHistory.ts       # Historia generacji (localStorage)
+    ├── lib/
+    │   ├── cn.ts               # clsx + tailwind-merge
+    │   ├── gemini-prompt.ts    # buildGeminiPrompt + parseGeminiResponse
+    │   ├── mock-templates.ts   # Fallback szablony
+    │   ├── history-storage.ts  # CRUD localStorage (max 50)
+    │   └── export-txt.ts       # Eksport TXT (Blob API + UTF-8 BOM)
+    ├── types/
+    │   ├── generator.ts        # Platform, Tone, Language, GenerateResult
+    │   └── history.ts          # HistoryEntry
+    └── constants/
+        ├── platforms.ts        # 5 platform + limity znaków
+        ├── tones.ts            # 5 tonów głosu
+        └── design-tokens.ts    # Kolory (dokumentacja CSS vars)
 ```
 
 ### 2.2 Diagram architektury
 
 ```mermaid
 graph TD
-    subgraph Frontend - Vanilla JS
-        A[index.html] --> B[app.js - Main Controller]
-        B --> C[generator.js - Strategy Pattern]
-        B --> FT[features.js - Nowe Moduły]
+    subgraph Browser - Client Components
+        UI[React UI - Hero/Features/FAQ]
+        GEN[GeneratorSection CC]
+        HIST[HistoryPanel CC]
+        THEME[useTheme hook]
+        UH[useHistory hook]
+    end
 
-        C --> D[templates.js - Mock Data]
-        C -->|Aktywna| G[Gemini API]
-        C -.->|Fallback 429| D
-
-        FT --> TM[ThemeManager - dark/light mode]
-        FT --> PB[ProgressBar - animowany pasek]
-        FT --> HM[HistoryManager - localStorage CRUD]
-        FT --> HU[HistoryUI - panel historii]
-        FT --> EM[ExportManager - eksport TXT]
-        FT --> CC[buildCharCounter - licznik znaków]
+    subgraph Next.js Server
+        PAGE[page.tsx - Server Component]
+        LAYOUT[layout.tsx + anti-FOUC]
+        ROUTE[POST /api/generate - Route Handler]
+        ZOD[Zod schema walidacja]
+        RL[Rate limit - in-memory]
+        LIB[lib/gemini-prompt.ts]
+        MOCK[lib/mock-templates.ts]
     end
 
     subgraph Google Cloud
-        G --> GV[POST /v1beta/models/gemini-2.5-flash:generateContent]
-        GV --> PR[JSON Response - captions + hashtags]
+        GEMINI[Gemini 2.0 Flash Lite API]
     end
 
-    C --> GUI[GeneratorUI - kontroler formularza]
-    GUI --> VAL[Walidacja danych wejściowych]
-    GUI --> LOAD[Loading state + ProgressBar]
-    GUI --> RENDER[Renderowanie wyników + CharCounter]
-    GUI --> HIST[Zapis do HistoryManager]
+    subgraph Browser Storage
+        LS1[localStorage: captionforge-history]
+        LS2[localStorage: captionforge-theme]
+    end
 
-    style A fill:#6C5CE7,color:white
-    style B fill:#2196F3,color:white
-    style C fill:#4CAF50,color:white
-    style D fill:#FF9800,color:white
-    style G fill:#74B9FF,color:white
-    style FT fill:#A29BFE,color:white
+    PAGE --> UI
+    PAGE --> GEN
+    PAGE --> HIST
+    LAYOUT -.->|inline script| LS2
+    THEME <--> LS2
+    UH <--> LS1
+
+    GEN -->|fetch POST| ROUTE
+    ROUTE --> ZOD
+    ROUTE --> RL
+    ROUTE --> LIB
+    LIB -->|prompt| GEMINI
+    GEMINI -->|JSON| LIB
+    LIB -.->|fallback| MOCK
+    ROUTE -.->|brak ENV key| MOCK
+
+    style ROUTE fill:#6C5CE7,color:white
+    style GEMINI fill:#74B9FF,color:white
+    style MOCK fill:#FF9800,color:white
+    style PAGE fill:#4CAF50,color:white
+    style GEN fill:#00B894,color:white
 ```
 
-### 2.3 Wzorzec Strategy Pattern
+### 2.3 Podział Server / Client Components
 
-Kluczowym wzorcem w `generator.js` jest **Strategy Pattern**, który umożliwia przełączanie silnika generowania bez zmian w UI:
+Zgodnie z regułą [`dev-coding-rules.md`](../kilocode/rules/dev-coding-rules.md) — preferuj **Server Components**, Client tylko tam gdzie konieczny (state, effects, event handlery).
 
-```
-GeneratorStrategy
-├── gemini    ← aktywna strategia (Google Gemini 2.5 Flash)
-│              └── fallback na mock przy rate limit (HTTP 429)
-└── mock      ← backup (szablony z templates.js, symulacja 1.5s)
-```
+| Komponent | Typ | Uzasadnienie |
+|-----------|-----|--------------|
+| [`app/page.tsx`](../code/src/app/page.tsx) | **Server** | Statyczna kompozycja sekcji |
+| [`features/navbar.tsx`](../code/src/components/features/navbar.tsx) | Server (opakowuje `ThemeToggle` CC) | Markup statyczny + leaf CC |
+| [`features/hero.tsx`](../code/src/components/features/hero.tsx) | **Server** | Statyczna treść |
+| [`features/features-grid.tsx`](../code/src/components/features/features-grid.tsx) | **Server** | |
+| [`features/how-it-works.tsx`](../code/src/components/features/how-it-works.tsx) | **Server** | |
+| [`features/faq.tsx`](../code/src/components/features/faq.tsx) | Client | Accordion state |
+| [`features/cta-bottom.tsx`](../code/src/components/features/cta-bottom.tsx) | **Server** | |
+| [`features/footer.tsx`](../code/src/components/features/footer.tsx) | **Server** | |
+| [`features/generator/generator-section.tsx`](../code/src/components/features/generator/generator-section.tsx) | Client | Stan formularza, fetch, historia |
+| [`features/generator/generator-form.tsx`](../code/src/components/features/generator/generator-form.tsx) | Client | Inputy, walidacja |
+| [`features/generator/generator-results.tsx`](../code/src/components/features/generator/generator-results.tsx) | Client | Copy-to-clipboard, eksport |
+| [`features/history/*`](../code/src/components/features/history) | Client | Odczyt `localStorage`, usuwanie |
+| [`ui/theme-toggle.tsx`](../code/src/components/ui/theme-toggle.tsx) | Client | `useTheme` |
+| [`ui/progress-bar.tsx`](../code/src/components/ui/progress-bar.tsx) | Client | Animowane etapy |
+| [`ui/toast.tsx`](../code/src/components/ui/toast.tsx) | Client | Zarządzanie widocznością |
 
-**Zmiana strategii** sprowadza się do jednej linii w `generator.js`:
-```javascript
-let activeStrategy = 'gemini'; // zmień na 'mock' aby wrócić do szablonów
-```
-Zero zmian w UI, walidacji i renderowaniu.
-
-### 2.4 Przepływ danych – generowanie opisu
+### 2.4 Przepływ danych — generowanie opisu
 
 ```mermaid
 sequenceDiagram
     participant U as Użytkownik
-    participant GUI as GeneratorUI
-    participant G as generateCaption()
-    participant S as GeneratorStrategy.gemini
-    participant API as Gemini API
+    participant F as GeneratorForm (CC)
+    participant S as GeneratorSection (CC)
+    participant API as /api/generate (Route Handler)
+    participant G as buildGeminiPrompt
+    participant Gem as Gemini API
+    participant P as parseGeminiResponse
+    participant H as useHistory / HistoryStorage
 
-    U->>GUI: Wypełnia formularz i klika Generuj (lub Ctrl+Enter)
-    GUI->>GUI: Walidacja – czy pole tematu niepuste
-    GUI->>GUI: showLoading() + ProgressBar.start()
-    GUI->>G: generateCaption(params)
-    G->>S: Delegacja do aktywnej strategii
+    U->>F: Wypełnia formularz, klik Generuj
+    F->>S: onSubmit(params)
+    S->>S: setState({status: "loading"})
+    S->>API: POST /api/generate (JSON)
+    API->>API: Rate limit check (IP, 30/h)
+    API->>API: Zod.safeParse(body)
 
-    S->>S: buildGeminiPrompt(params)
-    S->>API: POST /v1beta/.../gemini-2.5-flash:generateContent
-    
-    alt Sukces
-        API-->>S: JSON z captions + hashtags
-        S->>S: parseGeminiResponse()
-        S-->>G: { captions, hashtags, platform, tone, language }
-    else Rate limit (429)
-        API-->>S: HTTP 429
-        S->>S: Fallback na GeneratorStrategy.mock(params)
-        S-->>G: Wynik z szablonów mockowych
-    else Błąd sieci / API
-        API-->>S: Error
-        S-->>G: throw Error
-        G-->>GUI: showError() + showToast()
+    alt Brak GEMINI_API_KEY
+        API-->>S: generateMockResult(params)
+    else Klucz dostępny
+        API->>G: buildGeminiPrompt(params)
+        API->>Gem: fetch /v1beta/.../gemini-2.0-flash-lite:generateContent
+        alt HTTP 429
+            Gem-->>API: Rate limit
+            API-->>S: mock + source:"mock"
+        else HTTP 2xx
+            Gem-->>API: JSON (candidates → text)
+            API->>P: parseGeminiResponse(data, params)
+            alt JSON OK
+                P-->>API: GenerateResult (source:"gemini")
+            else Błąd parsowania
+                P-->>API: generateMockResult(params)
+            end
+            API-->>S: GenerateResult
+        else Błąd API
+            Gem-->>API: HTTP !ok
+            API-->>S: {error}, status 502
+        end
     end
 
-    G-->>GUI: Wynik generowania
-    GUI->>GUI: ProgressBar.complete()
-    GUI->>GUI: renderResults() + buildCharCounter()
-    GUI->>GUI: HistoryManager.save() + HistoryUI.onNewEntry()
-    GUI-->>U: 3 warianty opisów + hasztagi + licznik znaków
+    S->>S: setState({status:"success", result})
+    S->>H: addEntry(params, result)
+    H->>H: localStorage.set (max 50, FIFO)
+    S-->>U: Render GeneratorResults + progress complete
 ```
 
-### 2.5 Moduły JavaScript
-
-#### `app.js` – Main Controller
-Inicjalizuje i koordynuje pozostałe moduły. Odpowiada za:
-- Scroll effect na navbar + scroll-based active nav link highlight
-- Mobile hamburger menu (toggle + zamknięcie poza menu)
-- Smooth scroll dla wszystkich anchor linków (z offsetem navbara)
-- Intersection Observer – reveal animations z staggered delay dla grid-ów
-- FAQ Accordion – ekskluzywne otwieranie paneli
-- Inicjalizacja `ThemeManager`, `GeneratorUI`, `HistoryUI`
-- Mockup copy button w sekcji hero
-
-#### `generator.js` – Generator Logic + UI
-- `CONFIG` – konfiguracja Gemini API (klucz, model, temperature)
-- `GeneratorStrategy` – obiekt ze strategiami `gemini` i `mock`
-- `generateCaption()` – główna funkcja delegująca do aktywnej strategii
-- `buildGeminiPrompt()` – budowanie promptu z parametrów użytkownika
-- `parseGeminiResponse()` – parsowanie JSON z Gemini, fallback na mock przy błędzie
-- `getTemplates()` – pobieranie szablonów z fallbackiem tonu
-- `fillTemplate()` – podmiana `{topic}` i `{niche}` w szablonach
-- `generateHashtags()` – mix nisza + ogólne, Fisher-Yates shuffle, deduplication
-- `findNicheKey()` – exact + partial matching do bazy nisz
-- `GeneratorUI` – kontroler formularza: init, walidacja, loading, render, eksport, copy
-
-#### `templates.js` – Mock Data
-- `captionTemplates` – szablony opisów: 5 platform × 5 tonów × 2 języki
-- `hashtagDatabase` – baza hasztagów pogrupowana wg 8 nisz i 3 zasięgów
-- `platformHashtagLimits` – rekomendowane limity hasztagów per platforma
-- `reachLabels` – etykiety zasięgów (🔥 duży, 📈 średni, 🎯 niszowy) w PL i EN
-
-#### `features.js` – Nowe Moduły
-
-| Moduł | Odpowiedzialność |
-|-------|-----------------|
-| `ThemeManager` | Dark / light mode z persystencją w `localStorage`, anti-FOUC w `<head>`, listener na systemową preferencję |
-| `ProgressBar` | Animowany pasek z etapami tekstowymi (Analizuję → Generuję → Dobieram hasztagi → Gotowe!) |
-| `HistoryManager` | CRUD na `localStorage` – klucz `captionforge-history`, max 50 wpisów, auto-truncate przy przepełnieniu storage |
-| `HistoryUI` | Renderowanie panelu historii: lista wpisów z podglądem opisów, przywracanie ustawień do formularza, usuwanie wpisów |
-| `ExportManager` | Generowanie i pobieranie pliku `.txt` z opisami i hasztagami (UTF-8 BOM, Blob API) |
-| `buildCharCounter` | HTML z licznikiem znaków per platforma z progami safe / warning / danger |
-
-### 2.6 Struktura HTML – sekcje strony
-
-Planowana struktura stron `index.html`:
-
-| Sekcja | ID | Opis |
-|--------|----|------|
-| Navbar | `#navbar` | Logo, nawigacja, przycisk CTA, przełącznik motywu (🌙/☀️), hamburger |
-| Hero | `#hero` | Headline, CTA, mockup karty z przykładem, statystyki, floating badges |
-| Features | `#features` | 6 kart funkcji z ikonami (Inline SVG) |
-| How It Works | `#how-it-works` | 3 kroki z wizualizacjami |
-| Generator | `#generator` | Formularz (5 pól) + panel wyników (placeholder / loading / results) |
-| Historia | `#historySection` | Collapsible panel z historią generacji (localStorage) |
-| FAQ | `#faq` | 3 pytania w accordion |
-| CTA Bottom | – | Finalne CTA do generatora |
-| Footer | – | Linki, brand |
-
-### 2.7 Stany interfejsu generatora
+### 2.5 Stany interfejsu generatora
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Placeholder: Strona załadowana
-    Placeholder --> Loading: Klik Generuj / Ctrl+Enter
-    Loading --> Results: Gemini API zwraca wynik
-    Loading --> Results: Fallback mock (rate limit)
-    Loading --> Error: Błąd sieci / API
-    Results --> Loading: Klik Generuj ponownie
-    Error --> Placeholder: showError() - auto-reset
-    Results --> Copied: Klik Kopiuj przy opisie
-    Copied --> Results: Auto-reset po 2s
+    [*] --> Idle: Strona załadowana
+    Idle --> Loading: onSubmit (walidacja OK)
+    Loading --> Success: API zwraca GenerateResult
+    Loading --> Success: API zwraca mock fallback
+    Loading --> Error: HTTP !ok / Failed to fetch
+    Success --> Loading: Klik Regenerate
+    Error --> Idle: reset
+    Success --> Copied: Klik Copy
+    Copied --> Success: Auto-reset po 2s
 
     note right of Loading: ProgressBar: 3 etapy tekstowe
-    note right of Results: Opisy + hasztagi + licznik znaków
-    note right of Results: Zapis do HistoryManager
+    note right of Success: Kart z opisami + hasztagami + licznik znaków
+    note right of Success: Automatyczny zapis do HistoryStorage
 ```
+
+### 2.6 Struktura HTML — sekcje strony
+
+Sekcje renderowane w [`page.tsx`](../code/src/app/page.tsx):
+
+| Sekcja | ID / Komponent | Typ |
+|--------|----------------|-----|
+| Navbar | [`Navbar`](../code/src/components/features/navbar.tsx) | Server + leaf CC (`ThemeToggle`) |
+| Hero | [`Hero`](../code/src/components/features/hero.tsx) | Server |
+| Features | [`FeaturesGrid`](../code/src/components/features/features-grid.tsx) | Server |
+| How It Works | [`HowItWorks`](../code/src/components/features/how-it-works.tsx) | Server |
+| Generator | [`GeneratorSection`](../code/src/components/features/generator/generator-section.tsx) | Client |
+| Historia | [`HistoryPanel`](../code/src/components/features/history/history-panel.tsx) | Client (renderowana wewn. `GeneratorSection`) |
+| FAQ | [`FAQ`](../code/src/components/features/faq.tsx) | Client |
+| CTA Bottom | [`CtaBottom`](../code/src/components/features/cta-bottom.tsx) | Server |
+| Footer | [`Footer`](../code/src/components/features/footer.tsx) | Server |
 
 ---
 
-## 3. Plany implementacji
+## 3. Moduły aplikacji
 
-### 3.1 Decyzje architektoniczne
+### 3.1 Route Handler — `src/app/api/generate/route.ts`
 
-| Decyzja | Uzasadnienie |
-|---------|-------------|
-| Vanilla JS (bez frameworka) | Zero zależności npm, deployment = upload pliku, bundle ~0 kB overhead |
-| Strategy Pattern w generatorze | Przełączenie gemini ↔ mock = 1 linia kodu, zero zmian w UI |
-| Google Gemini 2.5 Flash | Szybkość + wysoka jakość + darmowy tier; możliwość zamiany na Pro przy skali |
-| Fallback mock przy rate limit 429 | Ciągłość działania bez degradacji UX przy przekroczeniu limitów |
-| localStorage dla historii | Zero backendu, zero konta, natychmiastowa wartość dla powracających userów |
-| System font stack | Brak FOIT/FOUT, zero zewnętrznych requestów, szybszy FCP |
-| Inline SVG | Kontrola koloru i animacji ikon, brak zewnętrznych zapytań |
-| CSS Custom Properties + `data-theme` | Dark mode bez przeładowania strony, spójny design system |
-| Anti-FOUC script w `<head>` | Motyw czytany z localStorage PRZED renderowaniem DOM – brak mignięcia jasnego tła |
-| Blob API dla eksportu TXT | Zero backendu – plik generowany w przeglądarce z UTF-8 BOM dla zgodności z Excelem/Notepadem |
+Serwerowy **proxy** do Gemini API — rozwiązuje krytyczne ryzyko z Planu 1 audytu (klucz API w przeglądarce).
 
-### 3.2 Planowana kolejność budowy
+**Odpowiedzialności:**
+- Odczyt `GEMINI_API_KEY` z `process.env` (nigdy nie trafia do klienta)
+- Walidacja payloadu przez `Zod` (wspólna z typami klienta)
+- Soft rate-limit in-memory per IP: **30 zapytań / godzinę**
+- Wywołanie Gemini 2.0 Flash Lite z `temperature: 0.8`, `maxOutputTokens: 2048`
+- Fallback na `generateMockResult()` przy: braku klucza / HTTP 429 / błędzie parsowania
+- Błędy transportowe → HTTP 502 z komunikatem
 
-Projekt należy budować iteracyjnie w poniższej kolejności:
+**Odpowiedź:** `GenerateResult` z polem `source: "gemini" | "mock"` informującym UI o źródle.
 
-```mermaid
-graph LR
-    A[1. HTML + sekcje] --> B[2. CSS + dark mode]
-    B --> C[3. app.js – nawigacja + animacje]
-    C --> D[4. templates.js – baza mockowych danych]
-    D --> E[5. generator.js – UI + mock strategy]
-    E --> F[6. Gemini API – strategia gemini + prompt ]
-    F --> G[7. features.js – History + Export + ProgressBar]
-    G --> H[8. ThemeManager + anti-FOUC]
-    H --> I[9. CharCounter per platforma]
-    I --> J[10. Testowanie + polish]
+### 3.2 Biblioteka — `src/lib/`
+
+| Plik | Opis |
+|------|------|
+| [`gemini-prompt.ts`](../code/src/lib/gemini-prompt.ts) | `buildGeminiPrompt()` — konstruuje prompt z PLATFORM_TIPS / TONE_DESCRIPTIONS. `parseGeminiResponse()` — czyści bloki markdown, parsuje JSON, dokleja `label` z `REACH_LABELS`, fallback na mock |
+| [`mock-templates.ts`](../code/src/lib/mock-templates.ts) | Szablony opisów + baza hasztagów pogrupowana wg platform × tonów × języków i 8 nisz × 3 zasięgów |
+| [`history-storage.ts`](../code/src/lib/history-storage.ts) | CRUD na `localStorage` klucz `captionforge-history`, max 50 wpisów (FIFO), auto-truncate przy przepełnieniu |
+| [`export-txt.ts`](../code/src/lib/export-txt.ts) | Generowanie Blob z UTF-8 BOM + `URL.createObjectURL` → download `.txt` |
+| [`cn.ts`](../code/src/lib/cn.ts) | `clsx + tailwind-merge` — helper do komponowania klas |
+
+### 3.3 Hooks — `src/hooks/`
+
+| Hook | Odpowiedzialność |
+|------|------------------|
+| [`useTheme`](../code/src/hooks/useTheme.ts) | Dark/light mode z persystencją w `localStorage` (klucz `captionforge-theme`), anti-FOUC script w `layout.tsx`, listener na `prefers-color-scheme`, toggle klasy `.dark` + atrybutu `data-theme` na `<html>` |
+| [`useHistory`](../code/src/hooks/useHistory.ts) | Reaktywny wrapper nad `HistoryStorage` — `entries`, `addEntry`, `removeEntry`, `clearAll`, `mounted` (SSR-safe) |
+
+### 3.4 Typy — `src/types/`
+
+- [`generator.ts`](../code/src/types/generator.ts) — `Platform`, `Tone`, `Language`, `HashtagReach`, `GenerateRequest`, `Caption`, `Hashtag`, `GenerateResult`, `GeneratorState`
+- [`history.ts`](../code/src/types/history.ts) — `HistoryEntry` (id, timestamp, params, result)
+
+### 3.5 Stałe — `src/constants/`
+
+- [`platforms.ts`](../code/src/constants/platforms.ts) — metadata 5 platform + `charLimits` (Instagram 2200, TikTok 300, LinkedIn 3000, Twitter 280, Facebook 63206) + progi safe/warning/danger
+- [`tones.ts`](../code/src/constants/tones.ts) — 5 tonów z opisami PL
+- [`design-tokens.ts`](../code/src/constants/design-tokens.ts) — dokumentacja CSS vars
+
+### 3.6 Dark Mode — Anti-FOUC
+
+Inline script w [`layout.tsx`](../code/src/app/layout.tsx:30) (przed hydratacją React):
+
+```javascript
+var stored = localStorage.getItem('captionforge-theme');
+var preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+var theme = stored || preferred || 'light';
+document.documentElement.setAttribute('data-theme', theme);
+document.documentElement.classList.toggle('dark', theme === 'dark');
 ```
 
-**Etap 1 – Struktura HTML:**
-- Semantyczny HTML5 z pełną listą sekcji (navbar → footer)
-- Formularz generatora z 5 polami: platforma, ton, nisza, język, temat
-- Placeholdery dla panelu historii i sekcji wyników
-
-**Etap 2 – CSS i Dark Mode:**
-- Mobile-first, breakpointy 768px / 1024px / 1200px
-- CSS Custom Properties dla design systemu i motywów (`[data-theme="dark"]`)
-- Flexbox / Grid do layoutu, CSS keyframes dla animacji
-
-**Etap 3 – app.js:**
-- Navbar scroll effect, hamburger menu, smooth scroll
-- Intersection Observer – reveal animations z staggered delay
-- FAQ accordion, active nav link tracking
-
-**Etap 4 – templates.js:**
-- Baza szablonów: 5 platform × 5 tonów × 2 języki
-- Baza hasztagów podzielona wg 8 nisz i 3 zasięgów
-- Dla każdej platformy: limit rekomendowanych hasztagów
-
-**Etap 5 – generator.js (mock strategy + UI):**
-- GeneratorUI: walidacja, loading state, render wyników, copy
-- Strategy Pattern: mock jako domyślna strategia
-- Utility functions: escapeHtml, copyToClipboard, showToast
-
-**Etap 6 – Gemini API:**
-- Strategia `gemini` w `GeneratorStrategy`
-- `buildGeminiPrompt()` z instrukcją JSON response format
-- `parseGeminiResponse()` z fallback na mock przy błędzie parsowania
-- Obsługa błędów: 429 → fallback mock, sieć/API → showError + toast
-- Zmiana `activeStrategy` na `'gemini'`
-
-**Etap 7 – features.js (HistoryManager + HistoryUI + ExportManager + ProgressBar):**
-- `HistoryManager.save()` wywoływany po każdym pomyślnym generowaniu
-- `HistoryUI` – collapsible panel z podglądem opisów, restore do formularza, usuwanie
-- `ExportManager.export()` – plik TXT z BOM, download przez Blob API
-- `ProgressBar` – 3 etapy tekstowe podczas ładowania Gemini API
-
-**Etap 8 – ThemeManager + Anti-FOUC:**
-- Inline script w `<head>` czytający `localStorage['captionforge-theme']` przed renderem
-- `ThemeManager.init()` w app.js, listener na zmianę systemowej preferencji
-- Przełącznik w navbarze z ikonami 🌙/☀️
-
-**Etap 9 – CharCounter per platforma:**
-- `platformCharLimits` per platforma (np. TikTok 300 znaków, Twitter 280)
-- `buildCharCounter()` z klasami CSS: `.safe` / `.warning` / `.danger`
-- Wywoływane przy renderowaniu każdej karty opisu
-
-**Etap 10 – Testowanie:**
-- Weryfikacja generowania dla wszystkich kombinacji platforma × ton × nisza × język
-- Test dark mode (toggle + systemowe preferencje + brak FOUC)
-- Test historii: zapis, podgląd, restore do formularza, usunięcie, wyczyszczenie
-- Test eksportu TXT: poprawna nazwa pliku, kodowanie UTF-8, format treści
-- Test fallback: symulacja 429 → czy mock się odpala
-- Test responsywności: mobile (< 768px), tablet, desktop
+Tailwind skonfigurowany na `darkMode: ["class", '[data-theme="dark"]']` → wspiera obie selekcje.
 
 ---
 
@@ -320,38 +299,51 @@ graph LR
 
 ### 4.1 Konfiguracja
 
-```javascript
-const CONFIG = {
-    geminiApiKey: 'AIza...',        // klucz z Google AI Studio
-    geminiModel:  'gemini-2.5-flash',
-    temperature:  0.8               // kreatywność generacji (0–1)
-};
+Klucz API wyłącznie po stronie serwera, w zmiennej środowiskowej:
+
+```env
+# code/.env.local
+GEMINI_API_KEY=AIza...
 ```
 
-Endpoint: `https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}`
+Model konfigurowalny w [`route.ts`](../code/src/app/api/generate/route.ts:79):
+
+```typescript
+const geminiModel = "gemini-2.0-flash-lite";
+const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${apiKey}`;
+```
 
 ### 4.2 Format promptu
 
+Budowany przez [`buildGeminiPrompt`](../code/src/lib/gemini-prompt.ts:30):
+
 ```
+Jesteś ekspertem od social media copywritingu.
+
 Wygeneruj dokładnie 3 różne warianty opisu posta oraz 10-15 hasztagów.
 
 PARAMETRY:
-- Platforma: {platformTip}        ← np. "TikTok – krótko i dynamicznie, max 300 znaków"
-- Ton głosu: {toneDescription}   ← np. "inspirujący i motywujący"
-- Nisza/branża: {niche}
+- Platforma: {PLATFORM_TIPS[platform]}     ← np. "TikTok — krótko i dynamicznie, max 300 znaków"
+- Ton głosu: {TONE_DESCRIPTIONS[tone]}     ← np. "inspirujący i motywujący"
+- Nisza/branża: {niche || "ogólna"}
 - Temat posta: {topic}
 - Język: {langName}
 
-ODPOWIEDZ W FORMACIE JSON – TYLKO JSON, bez dodatkowego tekstu:
+WYMAGANIA DLA OPISÓW:
+1. Każdy wariant musi mieć inny styl/podejście
+2. Dopasuj długość do specyfiki platformy
+3. Używaj emoji odpowiednio do tonu
+4. Zakończ call-to-action lub pytaniem angażującym
+
+WYMAGANIA DLA HASZTAGÓW:
+1. Mix popularnych i niszowych hasztagów
+2. Dopasowane do branży
+3. Oznacz każdy hasztag zasięgiem: large, medium lub small
+
+ODPOWIEDZ W FORMACIE JSON — TYLKO JSON:
 {
-  "captions": [
-    {"id": 1, "text": "...", "variant": "Wariant 1"},
-    ...
-  ],
-  "hashtags": [
-    {"tag": "#hashtag", "reach": "large|medium|small"},
-    ...
-  ]
+  "captions": [{"id": 1, "text": "...", "variant": "Wariant 1"}, ...],
+  "hashtags": [{"tag": "#hashtag", "reach": "large|medium|small"}, ...]
 }
 ```
 
@@ -359,31 +351,33 @@ ODPOWIEDZ W FORMACIE JSON – TYLKO JSON, bez dodatkowego tekstu:
 
 | Sytuacja | Zachowanie |
 |----------|-----------|
-| HTTP 429 (rate limit) | Automatyczny fallback na strategię `mock` |
-| Błąd parsowania JSON z Gemini | Fallback na strategię `mock` |
-| Błąd sieci (`Failed to fetch`) | Toast: "❌ Brak połączenia z internetem." |
-| Inny błąd Gemini API | Toast: "❌ Błąd API Gemini. Sprawdź klucz API lub spróbuj ponownie." |
+| Brak `GEMINI_API_KEY` | Zwrot `generateMockResult()` (tryb dev) |
+| Rate limit lokalny (30/h/IP) | HTTP 429 + PL komunikat |
+| HTTP 400 (niepoprawny payload) | `Zod` zwraca szczegóły błędu |
+| HTTP 429 z Gemini | Fallback na mock z `source: "mock"` |
+| Błąd parsowania JSON | Fallback na mock w [`parseGeminiResponse`](../code/src/lib/gemini-prompt.ts:120) |
+| `Failed to fetch` po stronie klienta | Toast: `❌ Brak połączenia z internetem.` |
+| Inny błąd z Gemini | HTTP 502 z opisem |
 
-### 4.4 Uwaga bezpieczeństwa
+### 4.4 Bezpieczeństwo — rozwiązany problem
 
-> ⚠️ **WAŻNE:** Klucz API przechowywany bezpośrednio w `CONFIG` jest widoczny w kodzie front-endu. Akceptowalne wyłącznie w fazie prototypu/MVP.
->
-> Przed produkcją należy wdrożyć **backend proxy** lub **Edge Function** (np. Vercel Serverless, Supabase Edge Function), który:
-> - Przyjmuje parametry generowania od frontendu bez klucza
-> - Sam wywołuje Gemini API z kluczem przechowywanym jako zmienna środowiskowa
-> - Implementuje rate limiting i auth per user
+Pierwotna wersja Vanilla trzymała klucz w `CONFIG` w `generator.js` (widoczny w DevTools). Migracja do Next.js rozwiązała ten problem:
 
 ```mermaid
 graph LR
-    A[Frontend] -->|params bez klucza API| B[Edge Function / API Proxy]
-    B -->|params + secret key| C[Gemini API]
+    A[Browser] -->|params bez klucza| B[POST /api/generate]
+    B -->|params + GEMINI_API_KEY| C[Gemini API]
     C --> B
     B --> A
-    B --> D[Rate Limiting per user]
-    B --> E[Auth Check - opcjonalnie]
+    B --> D[Rate Limit per IP]
+    B --> Z[Zod walidacja]
 
-    style B fill:#E17055,color:white
+    style B fill:#6C5CE7,color:white
 ```
+
+**TODO przed produkcją:**
+- [ ] Distributed rate limit (Upstash Redis / Vercel KV) — obecny jest in-memory i resetuje się przy restarcie
+- [ ] Metering per user (po dodaniu kont) dla modelu Free/Pro
 
 ---
 
@@ -391,17 +385,46 @@ graph LR
 
 ### 5.1 Technologie
 
-| Warstwa | Technologia | Uzasadnienie |
-|---------|-------------|-------------|
-| **Markup** | HTML5 semantyczny | Dostępność, SEO, zero budowania |
-| **Style** | CSS3 – Custom Properties, Flexbox, Grid | Brak preprocesora = prostota; dark mode przez `data-theme` |
-| **Logika** | Vanilla JavaScript ES6+ | Zero zależności, mały bundle |
-| **AI Backend** | Google Gemini 2.5 Flash | Wysokiej jakości generacja tekstu, szybki, darmowy tier |
-| **Animacje** | CSS Transitions + Keyframes + Intersection Observer | Natywne, wydajne, zero JS bibliotek |
-| **Ikony** | Inline SVG | Kontrola koloru przez CSS (fill/stroke), brak external requests |
-| **Fonty** | System font stack | Brak FOIT/FOUT, natychmiastowy rendering |
-| **Persystencja** | localStorage | Zero backendu – historia generacji dostępna między sesjami |
-| **Eksport** | Blob API + URL.createObjectURL | Pobieranie pliku TXT bez backendu, UTF-8 BOM |
+| Warstwa | Technologia | Wersja | Uzasadnienie |
+|---------|-------------|--------|-------------|
+| **Framework** | Next.js App Router | 14.2 | Server Components + Route Handlers |
+| **Runtime UI** | React | 18.3 | Concurrent rendering |
+| **Typy** | TypeScript | 5.x strict + `noUncheckedIndexedAccess` | Bezpieczeństwo typów |
+| **Style** | Tailwind CSS | 3.4 | Utility-first + CSS vars na design tokens |
+| **Dark mode** | `[data-theme="dark"]` + klasa `.dark` | — | Anti-FOUC przez inline script |
+| **Walidacja** | Zod | 3 | Wspólna schema client + server |
+| **Utilities** | clsx + tailwind-merge | — | Composable className |
+| **AI Backend** | Google Gemini 2.0 Flash Lite | — | Tani i szybki tier |
+| **Persystencja** | localStorage | — | Historia + motyw bez backendu |
+| **Eksport** | Blob API | — | Pobieranie TXT po stronie klienta |
+| **Fonty** | System font stack | — | Brak FOIT/FOUT |
+| **Ikony** | Inline SVG | — | Kontrola koloru przez CSS |
+
+### 5.2 Komendy
+
+```bash
+npm run dev       # Serwer dev (http://localhost:3000)
+npm run build     # Produkcyjny build
+npm run start     # Uruchomienie buildu
+npm run lint      # ESLint (next/core-web-vitals)
+npx tsc --noEmit  # Weryfikacja TypeScript strict
+```
+
+Zgodnie z [`dev-coding-rules.md`](../kilocode/rules/dev-coding-rules.md) każda sesja deweloperska musi kończyć się zielonym `tsc + lint + build`.
+
+### 5.3 Design tokens
+
+Zdefiniowane w [`globals.css`](../code/src/app/globals.css) jako CSS Custom Properties i mapowane do Tailwinda w [`tailwind.config.ts`](../code/tailwind.config.ts):
+
+| Token | Light | Dark |
+|-------|-------|------|
+| `--color-primary` | `#6C5CE7` | `#6C5CE7` |
+| `--color-secondary` | `#00B894` | `#00B894` |
+| `--color-accent` | `#FD79A8` | `#FD79A8` |
+| `--color-surface` | `#FFFFFF` | `#1A1A2E` |
+| `--color-text-primary` | `#2D3436` | `#E2E8F0` |
+
+Breakpointy: `sm: 480px`, `md: 768px`, `lg: 1024px`, `xl: 1200px`.
 
 ---
 
@@ -409,11 +432,15 @@ graph LR
 
 | Dokument | Zawartość |
 |----------|-----------|
-| [`README.md`](README.md) | Uruchomienie projektu, zakres funkcji, instrukcja podpięcia Gemini API |
-| [`plan.md`](plan.md) | Oryginalny plan techniczny: szczegółowy design system, kolory, breakpointy |
-| [`Job_To_Be_Done.md`](Job_To_Be_Done.md) | Persony (Kasia, Tomek), Job Snapshoty, analiza bólu, ryzyka biznesowe, MVP Scope |
-| [`User_Journey_Map.md`](User_Journey_Map.md) | User Journey MVP i docelowa, Gap Analysis (co zbudować dalej), metryki konwersji |
+| [`README.md`](README.md) | Uruchomienie, zakres funkcji, roadmap, stack |
+| [`plan.md`](plan.md) | Historyczny plan Vanilla + aktualny design system |
+| [`Job_To_Be_Done.md`](Job_To_Be_Done.md) | Persony (Kasia, Tomek), Job Snapshoty, ryzyka biznesowe |
+| [`User_Journey_Map.md`](User_Journey_Map.md) | User Journey MVP i docelowa, Gap Analysis, metryki |
+| [`../plans/szkielet-nextjs-captionforge.md`](../plans/szkielet-nextjs-captionforge.md) | Master plan migracji do Next.js |
+| [`../plans/captionforge-audit-i-roadmap.md`](../plans/captionforge-audit-i-roadmap.md) | Audit kodu Vanilla + 9 planów rozwoju |
+| [`../plans/gemini-api-integration.md`](../plans/gemini-api-integration.md) | Spec integracji Gemini (oryg. dla Vanilla, zaadaptowana) |
+| [`../kilocode/rules/dev-coding-rules.md`](../kilocode/rules/dev-coding-rules.md) | Standardy Next.js/React/TS/Tailwind |
 
 ---
 
-*Dokumentacja opisuje planowaną architekturę CaptionForge na podstawie analizy projektu.*
+*Dokumentacja opisuje aktualną architekturę CaptionForge w wersji Next.js 14 (kwiecień 2026). Pierwotna wersja Vanilla znajduje się w folderze [`vanilla web/`](../vanilla%20web).*
