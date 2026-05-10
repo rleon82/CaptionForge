@@ -15,19 +15,21 @@ Aplikacja Next.js 14 (App Router) z landingiem + generatorem opartym na Gemini 2
 | Dokument | Opis |
 |----------|------|
 | 📖 **[README.md](README.md)** | Ten plik — szybki start, koncepcja, struktura, stack |
-| 📋 **[plan.md](plan.md)** | Historyczny plan wersji Vanilla + aktualny design system (kolory, breakpointy) |
-| 📖 **[technical-documentation.md](technical-documentation.md)** | Pełna dokumentacja techniczna: architektura Next.js, Server/Client Components, Route Handler, hooks, diagramy Mermaid |
-| 🎯 **[Job_To_Be_Done.md](Job_To_Be_Done.md)** | Analiza JTBD: persony (Kasia — content creator, Tomek — freelancer SM), 10 Job Snapshotów, ryzyka biznesowe, MVP Scope |
-| 🗺️ **[User_Journey_Map.md](User_Journey_Map.md)** | Ścieżka użytkownika: Journey MVP i docelowa, Gap Analysis, metryki konwersji, rekomendacje UX |
+| 🏛️ **[architecture/legacy-vanilla-plan.md](architecture/legacy-vanilla-plan.md)** | Historyczny plan wersji Vanilla zachowany jako kontekst architektoniczny (design system, mapowanie Vanilla → Next.js) |
+| 📖 **[tech/technical-documentation.md](tech/technical-documentation.md)** | Pełna dokumentacja techniczna: architektura Next.js, Server/Client Components, Route Handler, hooks, diagramy Mermaid |
+| 🎯 **[business/Job_To_Be_Done.md](business/Job_To_Be_Done.md)** | Analiza JTBD: persony (Kasia — content creator, Tomek — freelancer SM), 10 Job Snapshotów, ryzyka biznesowe, MVP Scope |
+| 🗺️ **[business/User_Journey_Map.md](business/User_Journey_Map.md)** | Ścieżka użytkownika: Journey MVP i docelowa, Gap Analysis, metryki konwersji, rekomendacje UX |
 
-### Plany implementacyjne ([`plans/`](../plans))
+### Plany implementacyjne ([`docs/plans/`](plans))
 
 | Plan | Opis | Status |
 |------|------|--------|
-| 🏗️ **[szkielet-nextjs-captionforge.md](../plans/szkielet-nextjs-captionforge.md)** | Master plan migracji do Next.js 14 — architektura, 8 planów atomowych | ✅ Wdrożony |
-| 🔍 **[captionforge-audit-i-roadmap.md](../plans/captionforge-audit-i-roadmap.md)** | Audit kodu Vanilla + plany dalszego rozwoju (9 planów w 4 etapach) | ✅ Częściowo wdrożony |
-| 🚀 **[captionforge-new-features.md](../plans/captionforge-new-features.md)** | Historia, eksport TXT, licznik znaków, progress bar, dark mode | ✅ Wdrożony (port do Next.js) |
-| 🔌 **[gemini-api-integration.md](../plans/gemini-api-integration.md)** | Integracja Google Gemini — Strategy Pattern (oryg. Vanilla) | ✅ Wdrożony jako Route Handler |
+| 🏗️ **[PLAN_szkielet-nextjs-captionforge.md](plans/PLAN_szkielet-nextjs-captionforge.md)** | Master plan migracji do Next.js 14 — architektura, 8 planów atomowych | ✅ Wdrożony |
+| 🔍 **[PLAN_captionforge-audit-i-roadmap.md](plans/PLAN_captionforge-audit-i-roadmap.md)** | Audit kodu Vanilla + plany dalszego rozwoju (9 planów w 4 etapach) | ✅ Częściowo wdrożony |
+| 🚀 **[PLAN_captionforge-new-features.md](plans/PLAN_captionforge-new-features.md)** | Historia, eksport TXT, licznik znaków, progress bar, dark mode | ✅ Wdrożony (port do Next.js) |
+| 🔌 **[PLAN_gemini-api-integration.md](plans/PLAN_gemini-api-integration.md)** | Integracja Google Gemini — Strategy Pattern (oryg. Vanilla) | ✅ Wdrożony jako Route Handler |
+| 📐 **[PLAN_sdd-szablon-planu.md](plans/PLAN_sdd-szablon-planu.md)** | Szablon planu SDD (Plan C) — zastąpienie dev-plan-workflow | ✅ Wdrożony |
+| 📁 **[PLAN_sdd-struktura-katalogow.md](plans/PLAN_sdd-struktura-katalogow.md)** | Struktura katalogów SDD + migracja dokumentacji (Plan A) | ✅ Wdrożony |
 
 ### Reguły agenta AI ([`kilocode/rules/`](../kilocode/rules))
 
@@ -176,7 +178,7 @@ captionforge/
 │           ├── tones.ts         # 5 tonów głosu
 │           └── design-tokens.ts # Kolory (dokumentacja CSS vars)
 ├── docs/                        # Ten folder (dokumentacja)
-├── plans/                       # Plany implementacyjne
+├── docs/plans/                  # Plany implementacyjne (SDD)
 ├── vanilla web/                 # Historyczna wersja Vanilla HTML/CSS/JS (referencyjna)
 └── kilocode/                    # Reguły i workflows agenta AI
 ```
@@ -267,27 +269,11 @@ const geminiModel = "gemini-2.0-flash-lite"; // np. "gemini-2.5-flash" / "gemini
 ## 📊 Analiza biznesowa
 
 Pełna analiza dostępna w dokumentacji:
-- **JTBD:** [Job_To_Be_Done.md](Job_To_Be_Done.md) — persony, 10 snapshotów, ryzyka, MVP Scope
-- **User Journey:** [User_Journey_Map.md](User_Journey_Map.md) — ścieżka MVP i docelowa, gap analysis
-- **Plan techniczny (historyczny):** [plan.md](plan.md) — design system, kolory, breakpointy
-- **Audit kodu Vanilla:** [captionforge-audit-i-roadmap.md](../plans/captionforge-audit-i-roadmap.md)
-- **Master plan Next.js:** [szkielet-nextjs-captionforge.md](../plans/szkielet-nextjs-captionforge.md)
-
----
-
-## 💰 Model monetyzacji (planowany)
-
-| Feature | Free | Pro — 49 zł/mies. |
-|---------|------|--------------------|
-| Generowanie opisów | 10/mies. | ♾️ Bez limitu |
-| Platformy | 3 | 5 |
-| Tony głosu | 3 | 5 |
-| Hasztagi z oceną zasięgu | Podstawowe | Pełne |
-| Historia generacji | Lokalna | ✅ W chmurze (500) |
-| Eksport TXT/CSV | TXT | ✅ TXT + CSV |
-| Trial | — | 7 dni gratis |
-
-> Szczegóły strategii cenowej: [User_Journey_Map.md — Stage 7](User_Journey_Map.md)
+- **JTBD:** [business/Job_To_Be_Done.md](business/Job_To_Be_Done.md) — persony, 10 snapshotów, ryzyka, MVP Scope
+- **User Journey:** [business/User_Journey_Map.md](business/User_Journey_Map.md) — ścieżka MVP i docelowa, gap analysis
+- **Plan techniczny (historyczny):** [architecture/legacy-vanilla-plan.md](architecture/legacy-vanilla-plan.md) — design system, kolory, breakpointy
+- **Audit kodu Vanilla:** [plans/PLAN_captionforge-audit-i-roadmap.md](plans/PLAN_captionforge-audit-i-roadmap.md)
+- **Master plan Next.js:** [plans/PLAN_szkielet-nextjs-captionforge.md](plans/PLAN_szkielet-nextjs-captionforge.md)
 
 ---
 
@@ -305,7 +291,6 @@ Pełna analiza dostępna w dokumentacji:
 - [x] Port wszystkich modułów: hooks, lib, components (Server + Client)
 
 ### 🟡 Faza 3 — UX & Konwersja (planowana)
-- [ ] Sekcja Pricing (Free vs Pro) — między FAQ a CTA
 - [ ] Sekcja Testimonials / Social Proof
 - [ ] Animowany typewriter effect w Hero mockupie
 - [ ] Inline edit wygenerowanych opisów (`contenteditable` / `<textarea>`)
@@ -317,13 +302,7 @@ Pełna analiza dostępna w dokumentacji:
 - [ ] Email sequences (onboarding + retention)
 - [ ] Distributed rate limiting (Upstash Redis / Vercel KV)
 
-### 🔵 Faza 5 — Monetyzacja
-- [ ] Płatności (Stripe Checkout)
-- [ ] Rate limiting + metering (Free → Pro)
-- [ ] Plan roczny z rabatem
-- [ ] Analityka (GA4 / Mixpanel / PostHog)
-
-### 🚀 Faza 6 — Skalowanie
+### 🔵 Faza 5 — Skalowanie
 - [ ] Analiza trendów hasztagów (real-time API)
 - [ ] Integracja z Buffer/Later
 - [ ] Eksport CSV/PDF

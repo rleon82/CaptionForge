@@ -214,7 +214,6 @@ graph LR
 Ten job łączy:
 - 🔥 **Wysoką palączość** — dzieje się 5-50× w tygodniu w zależności od segmentu
 - ✅ **Łatwość rozwiązania** — formularz z 5 polami + AI/mock = szybki output
-- 💰 **Willingness-to-pay** — Kasia: 49 zł/mies., Tomek: 100-200 zł/mies.
 
 ### Minimum Success Criteria — co musi robić MVP
 
@@ -228,9 +227,9 @@ Ten job łączy:
 
 | # | Eksperyment | Cel | Czas realizacji |
 |---|-------------|-----|-----------------|
-| 1 | **Landing page + pre-signup** — strona CaptionForge z formularzem zapisu "Chcę dostęp do Pro" | Zmierzyć intent-to-pay: ile osób poda email? Target: >5% conversion rate | Już częściowo istnieje |
-| 2 | **Concierge test** — 10 content creatorów dostaje "darmowy pakiet 5 opisów" generowany ręcznie przez Ciebie z AI. Po 3 dniach: survey jakości + WTP | Zwalidować Desired Outcome #1: czy opisy są naprawdę użyteczne? | Wymaga outreach |
-| 3 | **Mock vs AI A/B** — połowa userów dostaje mock, połowa AI. Track: copy rate, return rate, NPS | Zmierzyć, czy AI robi istotną różnicę w percepcji wartości vs szablon | Wymaga integracji OpenAI |
+| 1 | **Landing page + pre-signup** — strona CaptionForge z formularzem zapisu na early access | Zmierzyć zainteresowanie: ile osób poda email? Target: >5% conversion rate | Już częściowo istnieje |
+| 2 | **Concierge test** — 10 content creatorów dostaje "darmowy pakiet 5 opisów" generowany ręcznie przez Ciebie z AI. Po 3 dniach: survey jakości | Zwalidować Desired Outcome #1: czy opisy są naprawdę użyteczne? | Wymaga outreach |
+| 3 | **Mock vs AI A/B** — połowa userów dostaje mock, połowa AI. Track: copy rate, return rate, NPS | Zmierzyć, czy AI robi istotną różnicę w percepcji wartości vs szablon | Wymaga integracji Gemini |
 
 ---
 
@@ -304,7 +303,6 @@ Ten job łączy:
 | **Activation** | % users kopiujących przynajmniej 1 opis w pierwszej sesji | >50% |
 | **Quality** | % opisów kopiowanych bez edycji — proxy NPS | >70% |
 | **Engagement** | Repeat usage: ile sesji generowania na usera/tydzień | >2 sesje/tydzień active users |
-| **Monetization** | % konwersji Free → Paid po trafieniu na limit | >5% |
 | **Efficiency** | Mediana czasu: landing → first copy | <120 sekund |
 
 ---

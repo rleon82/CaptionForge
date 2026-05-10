@@ -147,7 +147,7 @@ Strona (SC) → Layout (SC) → DataSection (SC) → InteractiveButton (CC)
 - Używaj `cn()` (clsx + tailwind-merge) do warunkowego łączenia klas:
 
 ```typescript
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/cn';
 
 <button className={cn(
   'px-4 py-2 rounded-md font-medium transition-colors',
@@ -162,8 +162,8 @@ import { cn } from '@/lib/utils';
 ## 6. Zasady Wydajności
 
 - **Obrazy:** ZAWSZE `next/image` z `width`, `height` i `alt` — nigdy surowy `<img>`
-- **Linki:** ZAWSZE `next/link` — nigdy surowy `<a>` dla routingu wewnętrznego
-- **Fonty:** `next/font` z subset `latin-ext` — nigdy Google Fonts przez `<link>` w HTML
+- **Linki:** ZAWSZE `next/link` — nigdy surowy `<a>` dla routingu wewnętrznego; **wyjątek:** in-page anchor linki (`href="#sekcja"`) używają surowego `<a>` lub `<a onClick={scrollTo}>` — `next/link` nie jest wymagany dla nawigacji w obrębie tej samej strony
+- **Fonty:** `next/font` z subset `latin-ext` — nigdy Google Fonts przez `<link>` w HTML; **wyjątek MVP:** jeśli decyzja projektowa to „system fonts stack" (bez własnych fontów), wówczas `next/font` pomijamy — udokumentuj wtedy decyzję w ADR
 - **Dynamic imports:** Dla komponentów > 50KB lub niewidocznych przy initial load → `dynamic(() => import(...))`
 - **Metadata:** Każda strona MUSI eksportować `metadata` lub `generateMetadata` dla SEO
 - **Keys w listach:** ZAWSZE unikalne, stabilne `key` — NIGDY indeks tablicy jako key
@@ -264,14 +264,19 @@ Kod MUSI przejść wszystkie 4 kroki bez błędów. Warningi ESLint są niedopus
 
 ---
 
-## 11. Sekcje Szablonu Planu dla Next.js (Rozszerzenie WF_Dev_Plan)
+## 11. Sekcje Szablonu Planu SDD dla Next.js (Rozszerzenie WF_Dev_Plan)
 
-Przy tworzeniu planów implementacyjnych (patrz `dev-plan-workflow.md`), używaj tych nazw sekcji zamiast generycznych:
+Przy wypełnianiu szablonu SDD z [`dev-plan-workflow.md`](dev-plan-workflow.md:1) (8 sekcji: 1. Cel, 2. Zakres, 3. Wymagania funkcjonalne, 4. Wymagania niefunkcjonalne, 5. Kontekst techniczny, 6. Kroki implementacji, 7. Kryteria akceptacji, 8. Testy), stosuj poniższe mapowanie sekcji generycznych na konwencje Next.js / React / TypeScript / Tailwind obowiązujące w CaptionForge.
 
-| Sekcja generyczna | Sekcja dla Next.js/React |
+Tabela mapowania — sekcje SDD → konwencje stosu projektu:
+
+| Sekcja SDD (generyczna) | Sekcja SDD dla Next.js/React (CaptionForge) |
 |---|---|
-| "Warstwa HTML" | "Warstwa UI (React Components + JSX)" |
-| "Logika JavaScript" | "Logika TypeScript (hooks / services / server actions)" |
-| "Warstwa CSS / Style" | "Stylowanie Tailwind CSS" |
-| *(brak)* | "Warstwa API (Route Handlers / Server Actions)" |
-| *(brak)* | "Typy TypeScript (interfaces / types)" |
+| `## 5. Kontekst techniczny – Komponenty` | Komponenty React (Server / Client) z lokalizacją w [`code/src/components/`](../../code/src/components:1) — atomowe w `ui/`, funkcjonalne w `features/`. |
+| `## 6. Kroki implementacji – Warstwa UI` | Kroki w warstwie React Components + JSX (pliki `*.tsx` w [`code/src/components/`](../../code/src/components:1) i [`code/src/app/`](../../code/src/app:1)). |
+| `## 6. Kroki implementacji – Logika` | Kroki w warstwie TypeScript: hooki w [`code/src/hooks/`](../../code/src/hooks:1), serwisy w [`code/src/services/`](../../code/src/services:1), Server Actions oraz utilsy w [`code/src/lib/`](../../code/src/lib:1). |
+| `## 6. Kroki implementacji – API` | Kroki w warstwie Route Handlers ([`code/src/app/api/**/route.ts`](../../code/src/app/api/generate/route.ts:1)) lub Server Actions. |
+| `## 6. Kroki implementacji – Typy` | Kroki w warstwie typów TypeScript ([`code/src/types/*.ts`](../../code/src/types:1) lub kolokowane przy komponencie). |
+| `## 6. Kroki implementacji – Stylowanie` | Kroki w warstwie Tailwind CSS — klasy w JSX, helper [`cn()`](../../code/src/lib/cn.ts:1) z `code/src/lib/cn.ts`, tokeny z [`code/src/constants/design-tokens.ts`](../../code/src/constants/design-tokens.ts:1). |
+| `## 8. Testy – unit` | Vitest / Jest dla [`code/src/lib/*`](../../code/src/lib:1) i [`code/src/hooks/*`](../../code/src/hooks:1). Pliki obok testowanego: `[nazwa].test.ts`. |
+| `## 8. Testy – integracyjne` | Testy Route Handlers ([`code/src/app/api/**/route.ts`](../../code/src/app/api/generate/route.ts:1)) z mockowanym Gemini + ewentualnie Playwright / React Testing Library dla flow UI (Generator → Wyniki → Historia). |

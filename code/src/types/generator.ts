@@ -1,33 +1,75 @@
 /**
  * Typy dla generatora opisów — CaptionForge
  * Używane przez formularz (client), API route (server) i wyniki (client)
+ *
+ * Enums Platform / Tone / Language są definiowane przez schematy Zod —
+ * dzięki z.infer jedno źródło prawdy (DRY) między typami a walidacją runtime.
  */
+import { z } from "zod";
 
-export type Platform =
-  | "instagram"
-  | "tiktok"
-  | "linkedin"
-  | "twitter"
-  | "facebook";
+// ── Schematy Zod (importowane też przez route.ts) ────────────────────────────
+export const PlatformSchema = z.enum([
+  "instagram",
+  "tiktok",
+  "linkedin",
+  "twitter",
+  "facebook",
+]);
 
-export type Tone =
-  | "inspirational"
-  | "professional"
-  | "casual"
-  | "humorous"
-  | "educational";
+export const ToneSchema = z.enum([
+  "inspirational",
+  "professional",
+  "casual",
+  "humorous",
+  "educational",
+]);
 
-export type Language = "pl" | "en";
+export const LanguageSchema = z.enum(["pl", "en"]);
 
-export type HashtagReach = "large" | "medium" | "small";
+export const HashtagReachSchema = z.enum(["large", "medium", "small"]);
 
-export interface GenerateRequest {
-  platform: Platform;
-  tone: Tone;
-  niche: string;
-  language: Language;
-  topic: string;
-}
+/**
+ * Schema opisująca payload zwracany przez Gemini wewnątrz parts[0].text.
+ * Używana w parseGeminiResponse do ścisłej walidacji odpowiedzi AI.
+ */
+export const GenerateResultPayloadSchema = z.object({
+  captions: z
+    .array(
+      z.object({
+        id: z.number().int(),
+        text: z.string().min(1),
+        variant: z.string().min(1),
+      })
+    )
+    .min(3)
+    .max(3),
+  hashtags: z
+    .array(
+      z.object({
+        tag: z.string().min(1),
+        reach: z.string(), // twarda walidacja przez HashtagReachSchema w parseGeminiResponse
+      })
+    )
+    .min(10)
+    .max(15),
+});
+
+export type GenerateResultPayload = z.infer<typeof GenerateResultPayloadSchema>;
+
+export const GenerateRequestSchema = z.object({
+  platform: PlatformSchema,
+  tone: ToneSchema,
+  niche: z.string().max(100).default(""),
+  language: LanguageSchema,
+  topic: z.string().min(1, "Temat posta jest wymagany").max(200),
+});
+
+// ── Typy wyprowadzone z schematów (z.infer) ───────────────────────────────────
+export type Platform = z.infer<typeof PlatformSchema>;
+export type Tone = z.infer<typeof ToneSchema>;
+export type Language = z.infer<typeof LanguageSchema>;
+export type HashtagReach = z.infer<typeof HashtagReachSchema>;
+export type GenerateRequest = z.infer<typeof GenerateRequestSchema>;
 
 export interface Caption {
   id: number;

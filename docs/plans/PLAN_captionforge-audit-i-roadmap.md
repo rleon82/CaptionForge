@@ -35,9 +35,8 @@
 | 2 | **Stack: Vanilla HTML/CSS/JS vs wytyczne z `dev-coding-rules.md`** | 🟡 ROZBIEŻNOŚĆ | Reguły zakładają Next.js + React + TypeScript + Tailwind, ale projekt jest w czystym HTML5/CSS3/JS. To świadomy wybór (prototyp edukacyjny), ale oznacza, że reguły z `dev-coding-rules.md` **nie mają zastosowania** w obecnej architekturze. |
 | 3 | **Brak walidacji server-side** | 🟡 WAŻNE | Cała logika jest client-side — żadna walidacja po stronie serwera (bo nie ma serwera). |
 | 4 | **CSS monolityczny** | 🟡 WAŻNE | Jeden plik [`styles.css`](../captionforge/css/styles.css) (~1100 linii bazowych + ~900 linii dark mode = ~2000 linii). Trudny w utrzymaniu. |
-| 5 | **Brak sekcji Pricing** | 🟢 DROBNE | W oryginalnym planie [`plan.md`](../captionforge/docs/plan.md:39) była sekcja "Pricing" (2 plany: Free i Pro), ale nie została zaimplementowana. |
-| 6 | **Globalne zmienne JS** | 🟡 WAŻNE | Wszystkie moduły (`GeneratorUI`, `HistoryManager`, `ThemeManager` itd.) są globalnymi obiektami — brak ES Modules. |
-| 7 | **Duplikacja escape functions** | 🟢 DROBNE | `_escH()` w [`features.js:479`](../captionforge/js/features.js:479) i `escapeHtml()` w [`generator.js:660`](../captionforge/js/generator.js:660) robią to samo. |
+| 5 | **Globalne zmienne JS** | 🟡 WAŻNE | Wszystkie moduły (`GeneratorUI`, `HistoryManager`, `ThemeManager` itd.) są globalnymi obiektami — brak ES Modules. |
+| 6 | **Duplikacja escape functions** | 🟢 DROBNE | `_escH()` w [`features.js:479`](../captionforge/js/features.js:479) i `escapeHtml()` w [`generator.js:660`](../captionforge/js/generator.js:660) robią to samo. |
 
 ---
 
@@ -51,8 +50,7 @@
 - Generator ma czytelny podział formularz ↔ wyniki
 
 **Problemy designowe:**
-1. **Brak sekcji Pricing** – strona obiecuje "Wypróbuj za darmo – bez karty kredytowej" ale nigdzie nie wyjaśnia, co jest w planie Free vs Pro
-2. **Footer zawiera linki-widma** – "O nas", "Blog", "Kontakt", "Polityka prywatności", "Regulamin" prowadzą donikąd (`href="#"`)
+1. **Footer zawiera linki-widma** – "O nas", "Blog", "Kontakt", "Polityka prywatności", "Regulamin" prowadzą donikąd (`href="#"`)
 3. **Sekcja "How it Works"** – karty wizualne (krok 01, 02, 03) mogłyby mieć wyraźniejsze połączenie wizualne (connector lines w dark mode zlewają się z tłem)
 4. **Hero stats (10K+, 500K+)** – są fikcyjne dla prototypu, ale brak żadnego disclaimera
 5. **Brak testimonials / social proof** – sekcja z opiniami użytkowników znacząco zwiększa konwersję
@@ -75,30 +73,7 @@
 
 ### Etap 2 – 🟡 UX & Konwersja (WAŻNE)
 
-#### Plan 2: Sekcja Pricing (Free vs Pro)
-
-| Klucz | Wartość |
-|-------|---------|
-| **Problem** | Strona obiecuje monetyzację, ale nie ma tabeli cenowej |
-| **Rozwiązanie** | Dodaj sekcję Pricing między FAQ a CTA z 2 planami: Free (5 gen/dzień) i Pro (unlimited) |
-| **Zmieniane pliki** | `captionforge/index.html`, `captionforge/css/styles.css` |
-| **Szacowany czas** | 1-1.5h |
-| **Wartość** | Klaruje ścieżkę monetyzacji, zwiększa konwersję |
-
-Propozycja struktury cennika:
-
-```
-Free – 0 zł/miesiąc        Pro – 29 zł/miesiąc
-✅ 5 generacji dziennie     ✅ Nielimitowane generacje
-✅ 3 warianty opisu         ✅ Eksport do CSV/TXT
-✅ 5 platform               ✅ Zapisane presety
-❌ Historia (max 5 wpisów)  ✅ Historia (100 wpisów)
-❌ Presety                  ✅ Wsparcie e-mail
-```
-
----
-
-#### Plan 3: Sekcja Testimonials / Social Proof
+#### Plan 2: Sekcja Testimonials / Social Proof
 
 | Klucz | Wartość |
 |-------|---------|
@@ -189,13 +164,12 @@ Priorytet   Plan                              Czas    Wartość
 ──────────────────────────────────────────────────────────────
 🔴 P1    → Plan 1: Proxy API key             1-2h    Bezpieczeństwo
 🟡 P2    → Plan 5: Kopiuj z hasztagami       30min   Szybkie UX win
-🟡 P3    → Plan 2: Pricing sekcja            1.5h    Konwersja
-🟡 P4    → Plan 3: Testimonials              1h      Social proof
-🟡 P5    → Plan 6: Inline edit               1h      UX
-🟢 P6    → Plan 4: Animacja Hero             1.5h    First impression
-🟢 P7    → Plan 7: Presety                   2h      Power users
-🔵 P8    → Plan 8: Refaktor CSS              2h      Tech debt
-🔵 P9    → Plan 9: ES Modules                3h      Tech debt
+🟡 P3    → Plan 2: Testimonials              1h      Social proof
+🟡 P4    → Plan 3: Inline edit               1h      UX
+🟢 P5    → Plan 4: Animacja Hero             1.5h    First impression
+🟢 P6    → Plan 6: Presety                   2h      Power users
+🔵 P7    → Plan 7: Refaktor CSS              2h      Tech debt
+🔵 P8    → Plan 8: ES Modules                3h      Tech debt
 ```
 
 ---
@@ -208,7 +182,6 @@ Priorytet   Plan                              Czas    Wartość
 | Gemini API zablokuje klucz za nadużycia | Średnie | Limity w Google Cloud Console |
 | Refaktor CSS łamie dark mode | Średnie | Testuj każdą sekcję po podziale |
 | ES Modules – plik:// nie działa | Pewne | Zdeployować na Netlify/Vercel lub Live Server |
-| Pricing sekcja sugeruje produkt SaaS – oczekiwania użytkowników | Niskie | Wyraźny disclaimer "Coming soon" na Pro |
 
 ---
 
@@ -217,7 +190,7 @@ Priorytet   Plan                              Czas    Wartość
 **Jakim projektem jest CaptionForge?**
 
 - **(A) Prototyp edukacyjny / projekt na zaliczenie** → Start od Etapu 2 (design + UX), bezpieczeństwo API jest akceptowalne
-- **(B) Realna walidacja pomysłu SaaS** → Start od Etapu 1 (bezpieczeństwo), potem Etap 2 z naciskiem na Pricing
+- **(B) Realna walidacja pomysłu** → Start od Etapu 1 (bezpieczeństwo), potem Etap 2 (UX + social proof)
 - **(C) Docelowo migracja na Next.js/React/TS** → Etap 4 to waste of time — lepiej od razu zacząć nowy projekt wg `dev-coding-rules.md`
 
 Odpowiedź na to pytanie determinuje kolejność powyższych planów.

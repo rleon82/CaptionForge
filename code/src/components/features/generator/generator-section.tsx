@@ -28,36 +28,67 @@ export function GeneratorSection() {
     async (params: GenerateRequest) => {
       setState({ status: "loading", stage: 0 });
 
-      try {
-        const res = await fetch("/api/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(params),
-        });
+      const CLIENT_RETRIES = 2; // łącznie 3 próby (1 oryginał + 2 retry)
+      const CLIENT_BACKOFF_MS = [800, 2000] as const;
 
-        if (!res.ok) {
-          const errorData = (await res.json().catch(() => ({}))) as {
-            error?: string;
-          };
-          throw new Error(errorData.error ?? `HTTP ${res.status}`);
+      let lastError: Error | null = null;
+
+      for (let attempt = 0; attempt <= CLIENT_RETRIES; attempt++) {
+        // Opóźnienie przed retry (nie przed pierwszą próbą)
+        if (attempt > 0) {
+          await new Promise((r) =>
+            setTimeout(r, (CLIENT_BACKOFF_MS[attempt - 1] ?? 800) + Math.random() * 300)
+          );
         }
 
-        const result = (await res.json()) as GenerateResult;
-        setState({ status: "success", result });
-        // Zapisz do historii
-        addEntry(params, result);
-      } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Nieznany błąd. Spróbuj ponownie.";
-
-        if (message.includes("Failed to fetch")) {
-          setState({
-            status: "error",
-            message: "❌ Brak połączenia z internetem.",
+        try {
+          const res = await fetch("/api/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(params),
           });
-        } else {
-          setState({ status: "error", message: `❌ ${message}` });
+
+          // Błędy walidacji (4xx) — nie retryuj
+          if (res.status >= 400 && res.status < 500) {
+            const errorData = (await res.json().catch(() => ({}))) as {
+              error?: string;
+            };
+            throw new Error(errorData.error ?? `HTTP ${res.status}`);
+          }
+
+          if (!res.ok) {
+            // 5xx — retryuj
+            lastError = new Error(`HTTP ${res.status}`);
+            continue;
+          }
+
+          const result = (await res.json()) as GenerateResult;
+          setState({ status: "success", result });
+          addEntry(params, result);
+          return; // sukces — wyjdź z pętli
+        } catch (err) {
+          const message = err instanceof Error ? err.message : "Nieznany błąd";
+
+          // Błędy walidacji (4xx) — nie retryuj, rzuć od razu
+          if (message.startsWith("HTTP 4")) {
+            lastError = err instanceof Error ? err : new Error(message);
+            break;
+          }
+
+          lastError = err instanceof Error ? err : new Error(message);
+          // Błędy sieciowe / 5xx — kontynuuj retry
         }
+      }
+
+      // Wszystkie próby nieudane
+      const message = lastError?.message ?? "Nieznany błąd. Spróbuj ponownie.";
+      if (message.includes("Failed to fetch") || message.includes("NetworkError")) {
+        setState({
+          status: "error",
+          message: "❌ Brak połączenia z internetem.",
+        });
+      } else {
+        setState({ status: "error", message: `❌ ${message}` });
       }
     },
     [addEntry]

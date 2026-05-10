@@ -157,10 +157,26 @@ export function GeneratorResults({
 
   return (
     <div className="space-y-4">
-      {/* Source badge */}
+      {/* Mock fallback banner — widoczny gdy AI niedostępne */}
       {result.source === "mock" && (
-        <div className="text-xs px-3 py-1.5 rounded-lg bg-[rgb(var(--color-warning)/0.1)] text-[rgb(var(--color-warning))] border border-[rgb(var(--color-warning)/0.2)]">
-          ⚠️ Wyniki z szablonów (mock) — sprawdź klucz API w pliku .env.local
+        <div className="rounded-xl border border-[rgb(var(--color-warning)/0.35)] bg-[rgb(var(--color-warning)/0.08)] px-4 py-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-start gap-2 text-sm text-[rgb(var(--color-warning))]">
+            <span className="mt-0.5 shrink-0">⚠️</span>
+            <span>
+              <strong>Tryb awaryjny — szablony</strong>
+              <br />
+              <span className="text-xs opacity-80">
+                AI chwilowo niedostępne. Poniżej gotowe szablony — kliknij
+                &ldquo;Spróbuj z AI&rdquo;, aby ponowić.
+              </span>
+            </span>
+          </div>
+          <button
+            onClick={onRegenerate}
+            className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-lg border border-[rgb(var(--color-warning)/0.4)] text-[rgb(var(--color-warning))] hover:bg-[rgb(var(--color-warning)/0.15)] transition-colors"
+          >
+            🔄 Spróbuj z AI
+          </button>
         </div>
       )}
 

@@ -1,8 +1,16 @@
 /**
  * Funkcje do budowania promptu dla Gemini API i parsowania odpowiedzi.
  * Port z plans/gemini-api-integration.md (buildGeminiPrompt, parseGeminiResponse).
+ *
+ * P0 — niezawodność:
+ * - GENERATE_RESPONSE_SCHEMA: Structured Output dla Gemini (wymusza kontrakt JSON)
+ * - parseGeminiResponse: walidacja Zod + twarda walidacja `reach` + fallback do mocka
  */
 import type { GenerateRequest, GenerateResult, Hashtag } from "@/types/generator";
+import {
+  GenerateResultPayloadSchema,
+  HashtagReachSchema,
+} from "@/types/generator";
 import { generateMockResult } from "./mock-templates";
 
 const PLATFORM_TIPS: Record<string, string> = {
@@ -26,6 +34,45 @@ const REACH_LABELS: Record<string, Record<string, string>> = {
   medium: { pl: "📈 Średni zasięg", en: "📈 Medium reach" },
   small: { pl: "🎯 Niszowy", en: "🎯 Niche" },
 };
+
+/**
+ * JSON Schema dla Gemini Structured Output.
+ * Wymusza dokładny kontrakt odpowiedzi — eliminuje losowe łamanie formatu JSON.
+ * Używany w generationConfig.responseSchema w route.ts.
+ */
+export const GENERATE_RESPONSE_SCHEMA = {
+  type: "object",
+  properties: {
+    captions: {
+      type: "array",
+      minItems: 3,
+      maxItems: 3,
+      items: {
+        type: "object",
+        properties: {
+          id: { type: "integer" },
+          text: { type: "string" },
+          variant: { type: "string" },
+        },
+        required: ["id", "text", "variant"],
+      },
+    },
+    hashtags: {
+      type: "array",
+      minItems: 10,
+      maxItems: 15,
+      items: {
+        type: "object",
+        properties: {
+          tag: { type: "string" },
+          reach: { type: "string", enum: ["large", "medium", "small"] },
+        },
+        required: ["tag", "reach"],
+      },
+    },
+  },
+  required: ["captions", "hashtags"],
+} as const;
 
 export function buildGeminiPrompt(params: GenerateRequest): string {
   const { platform, tone, niche, language, topic } = params;
@@ -76,6 +123,7 @@ interface GeminiApiResponse {
     content?: {
       parts?: Array<{ text?: string }>;
     };
+    finishReason?: string;
   }>;
 }
 
@@ -83,43 +131,71 @@ export function parseGeminiResponse(
   data: GeminiApiResponse,
   params: GenerateRequest
 ): GenerateResult {
-  try {
-    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
-    if (!rawText) {
-      throw new Error("Brak treści w odpowiedzi Gemini");
-    }
-
-    // Gemini czasem zwraca JSON w bloku markdown — czyścimy
-    const cleanJson = rawText
-      .replace(/```json\n?/g, "")
-      .replace(/```\n?/g, "")
-      .trim();
-
-    const parsed = JSON.parse(cleanJson) as {
-      captions?: Array<{ id: number; text: string; variant: string }>;
-      hashtags?: Array<{ tag: string; reach: string }>;
-    };
-
-    const lang = params.language;
-
-    const hashtags: Hashtag[] = (parsed.hashtags ?? []).map((h) => ({
-      tag: h.tag,
-      reach: (h.reach as Hashtag["reach"]) ?? "medium",
-      label: REACH_LABELS[h.reach]?.[lang] ?? h.reach,
-    }));
-
-    return {
-      captions: parsed.captions ?? [],
-      hashtags,
-      platform: params.platform,
-      tone: params.tone,
-      language: params.language,
-      source: "gemini",
-    };
-  } catch (err) {
-    console.error("Błąd parsowania odpowiedzi Gemini:", err);
-    // Fallback na mock — użytkownik i tak dostanie wynik
+  if (!rawText) {
+    console.warn("[parseGeminiResponse] Brak treści w odpowiedzi Gemini — fallback na mock");
     return generateMockResult(params);
   }
+
+  // Gemini czasem zwraca JSON w bloku markdown — czyścimy
+  const cleanJson = rawText
+    .replace(/```json\n?/g, "")
+    .replace(/```\n?/g, "")
+    .trim();
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(cleanJson);
+  } catch (err) {
+    console.warn("[parseGeminiResponse] JSON.parse failed — fallback na mock:", err);
+    return generateMockResult(params);
+  }
+
+  // Ścisła walidacja Zod
+  const validation = GenerateResultPayloadSchema.safeParse(parsed);
+  if (!validation.success) {
+    console.warn(
+      "[parseGeminiResponse] Zod validation failed — fallback na mock:",
+      validation.error.flatten()
+    );
+    return generateMockResult(params);
+  }
+
+  const payload = validation.data;
+  const lang = params.language;
+
+  // Twarda walidacja `reach` z fallbackiem do "medium"
+  const invalidReachValues: string[] = [];
+  const hashtags: Hashtag[] = payload.hashtags.map((h) => {
+    const reachResult = HashtagReachSchema.safeParse(h.reach);
+    if (!reachResult.success) {
+      invalidReachValues.push(h.reach);
+      return {
+        tag: h.tag,
+        reach: "medium" as const,
+        label: REACH_LABELS["medium"]?.[lang] ?? "📈 Średni zasięg",
+      };
+    }
+    return {
+      tag: h.tag,
+      reach: reachResult.data,
+      label: REACH_LABELS[reachResult.data]?.[lang] ?? reachResult.data,
+    };
+  });
+
+  if (invalidReachValues.length > 0) {
+    console.warn(
+      `[parseGeminiResponse] Nieprawidłowe wartości reach (zamienione na "medium"): ${invalidReachValues.join(", ")}`
+    );
+  }
+
+  return {
+    captions: payload.captions,
+    hashtags,
+    platform: params.platform,
+    tone: params.tone,
+    language: params.language,
+    source: "gemini",
+  };
 }

@@ -157,9 +157,7 @@ graph TD
 **Export Options:**
 - [x] Kopiuj do schowka – per opis
 - [x] Kopiuj wszystkie hasztagi – jednym kliknięciem
-- [ ] ❌ Brak: Download as TXT/PDF
-- [ ] ❌ Brak: Email do siebie
-- [ ] ❌ Brak: Share link
+
 
 **✅ Co działa dobrze:**
 - 3 warianty dają wybór – user nie czuje się uwięziony w jednym wyniku
@@ -203,13 +201,12 @@ Ale tutaj jest kluczowy problem:
 2. **Iluzoryczny Aha Moment** – mock szablony powtarzają się po kilku użyciach
 3. **Social proof jest sztuczny** – "10K+ Twórców" bez dowodów podważa zaufanie
 4. **Zero persistencji** – odświeżenie = utrata wyników
-5. **Brak ścieżki do płatności** – pricing section istnieje, ale CTA prowadzi do generatora, a nie do checkout'u
 
 ---
 
-## CZĘŚĆ II: User Journey Docelowa – z kontami, AI i płatnościami
+## CZĘŚĆ II: User Journey Docelowa – z kontami i AI
 
-> **Kontekst:** Supabase Auth + OpenAI GPT-4 + Stripe + email marketing. Pełna 7-etapowa ścieżka.
+> **Kontekst:** Supabase Auth + Gemini API + email marketing. Pełna ścieżka od odkrycia do retencji.
 
 ### Diagram Journey Docelowej
 
@@ -217,34 +214,27 @@ Ale tutaj jest kluczowy problem:
 graph TD
     START[Użytkownik trafia na stronę] --> S1[Stage 1: Landing]
     S1 --> TRY{Próbuje generatora bez konta}
-    TRY --> GEN[Generator - limit 3 darmowe bez konta]
+    TRY --> GEN[Generator - 3 darmowe bez konta]
     GEN --> OUTPUT[Widzi wynik - AHA Moment]
-    OUTPUT --> WALL[Soft Wall: Chcesz wiecej? Załóż konto]
+    OUTPUT --> WALL[Soft Wall: Chcesz więcej? Załóż konto]
 
     WALL --> S2[Stage 2: Sign-Up - email + hasło]
     S2 --> CONFIRM[Potwierdzenie emaila - instant link]
     CONFIRM --> DASH[Stage 3: Dashboard - historia + generator]
 
     DASH --> SECOND[Stage 4: Drugie użycie - z własnej inicjatywy]
-    SECOND --> HABIT[Budowanie nawyku - daily use]
-
-    HABIT --> LIMIT[Trafia na limit Free: 10 opisów/mies.]
-    LIMIT --> S7[Stage 7: Conversion - upgrade do Pro]
-    S7 --> PAID[Płacący użytkownik]
-    PAID --> RETAIN[Retencja - month over month]
+    SECOND --> HABIT[Budowanie nawyku - regular use]
+    HABIT --> RETAIN[Retencja - powracający użytkownik]
 
     OUTPUT --> CHURN1[Odchodzi - opis nie był dobry]
     WALL --> CHURN2[Odchodzi - nie chce zakładać konta]
-    LIMIT --> CHURN3[Odchodzi - nie chce płacić]
 
     style START fill:#6C5CE7,color:white
     style OUTPUT fill:#00B894,color:white
-    style PAID fill:#00B894,color:white
+    style RETAIN fill:#00B894,color:white
     style CHURN1 fill:#E17055,color:white
     style CHURN2 fill:#E17055,color:white
-    style CHURN3 fill:#E17055,color:white
     style WALL fill:#FDCB6E,color:#333
-    style LIMIT fill:#FDCB6E,color:#333
 ```
 
 ---
@@ -391,47 +381,6 @@ graph TD
 
 ---
 
-### Stage 7: Conversion to Paid – 7-30 dni
-
-**Trigger:** User trafia na limit Free:
-
-> "Wykorzystałeś 10 z 10 darmowych opisów w tym miesiącu. Przejdź na Pro, aby generować bez limitów."
-
-**Soft limit approach:**
-- Po 8/10 opisów: "Zostały Ci 2 darmowe opisy w tym miesiącu"
-- Po 10/10: Blokada generatora z jasnym CTA do upgrade
-
-**Message – Email + In-App:**
-- Subject: "Twój limit się kończy – przejdź na Pro za 49 zł/mies."
-- In-app banner: "🔒 Limit osiągnięty. Upgrade do Pro → Nielimitowane opisy, wszystkie platformy, historia 500 opisów"
-
-**Pricing:**
-| Feature | Free | Pro – 49 zł/mies. |
-|---------|------|--------------------|
-| Opisy | 10/mies. | ♾️ Bez limitu |
-| Platformy | 3 | 5 |
-| Tony głosu | 3 | 5 |
-| Hasztagi | Podstawowe | Z oceną zasięgu |
-| Historia | ❌ | ✅ 500 ostatnich |
-| Eksport CSV | ❌ | ✅ |
-| Trial | – | 7 dni gratis |
-
-**CTA Button:** "Wypróbuj Pro – 7 dni gratis"
-
-**Friction Points:**
-- [ ] Issue: 49 zł/mies. może być dużo dla casual user'a – porównaj z ChatGPT Plus za ~100 zł/mies.
-  - Solution: Dodać roczny plan z rabatem: 390 zł/rok = 32.50 zł/mies. (33% taniej)
-- [ ] Issue: User może generować opisy w ChatGPT bezpośrednio – po co płacić za wrapper?
-  - Solution: Value prop Pro: "Zapamiętane ustawienia + historia + hasztagi z oceną zasięgu + 1-click copy. ChatGPT tego nie ma."
-- [ ] Issue: 7-dniowy trial może nie wystarczyć na zbudowanie nawyku
-  - Solution: 14-dniowy trial lub "Pierwszy miesiąc 19 zł" jako intro pricing
-- [ ] Issue: Proces płatności musi być bezbolesny
-  - Solution: Stripe Checkout – 1 strona, karta lub BLIK, zero formularzy korporacyjnych
-
-**Aha Moment:** _"Jeśli nie zapłacę, stracę dostęp do narzędzia, na którym oszczędzam 3h tygodniowo. 49 zł to mniej niż moja godzina pracy."_
-
----
-
 ## CZĘŚĆ III: Gap Analysis – MVP vs Docelowa
 
 ### Co brakuje w MVP, aby dojść do docelowej journey
@@ -447,12 +396,10 @@ graph LR
 
     subgraph GAP - do zbudowania
         B1[System kont - Supabase Auth]
-        B2[AI Generator - OpenAI GPT-4]
-        B3[Backend proxy - Edge Functions]
+        B2[AI Generator - Gemini API]
+        B3[Backend proxy - Route Handler]
         B4[Historia opisów - Supabase DB]
         B5[Email marketing - Resend/Postmark]
-        B6[Płatności - Stripe]
-        B7[Rate limiting + metering]
         B8[localStorage cache]
     end
 
@@ -463,8 +410,7 @@ graph LR
         C4[AI output ⭐]
         C5[Dashboard + historia]
         C6[Email sequences]
-        C7[Limit + conversion]
-        C8[Paid user]
+        C7[Retencja - powracający user]
     end
 
     A1 --> B1 --> C3
@@ -472,15 +418,13 @@ graph LR
     B2 --> B3
     B1 --> B4 --> C5
     B1 --> B5 --> C6
-    B5 --> B7 --> C7
-    B7 --> B6 --> C8
+    B5 --> C7
 
     style A3 fill:#FDCB6E,color:#333
     style B1 fill:#74B9FF,color:white
     style B2 fill:#74B9FF,color:white
-    style B6 fill:#74B9FF,color:white
     style C4 fill:#00B894,color:white
-    style C8 fill:#00B894,color:white
+    style C7 fill:#00B894,color:white
 ```
 
 ### Tabela gap'ów z priorytetami
@@ -493,9 +437,6 @@ graph LR
 | System kont | Brak | Supabase Auth | 🟡 P1 – ważny | Retencja wymaga kont |
 | Historia opisów | Brak | Supabase Database | 🟡 P1 – ważny | Core value prop dla retencji |
 | Email sequences | Brak | Resend/Postmark | 🟠 P2 – retention | Napędza return rate |
-| Płatności | Brak | Stripe Checkout | 🟠 P2 – monetyzacja | Bez tego nie ma revenue |
-| Rate limiting | Brak | Metering per user | 🟠 P2 – monetyzacja | Wymusza konwersję Free → Pro |
-| Roczny plan | Brak | 390 zł/rok | 🟢 P3 – optymalizacja | Obniża churn, podnosi LTV |
 | Analityka | Brak | GA4 / Mixpanel | 🟢 P3 – tracking | Nie możesz poprawić tego, czego nie mierzysz |
 
 ---
@@ -506,9 +447,8 @@ graph LR
 
 > **Mock generator** – opisy oparte na szablonach powtarzają się po 3-4 użyciach. To sprawia, że Aha Moment jest jednorazowy. User wraca, widzi podobny output i myśli: "To nie jest AI, to automat". **Retencja spada do zera.**
 
-**Rozwiązanie:** Integracja z OpenAI GPT-4 to **jedyny ruch**, który umożliwia resztę journey'u. Bez prawdziwego AI:
+**Rozwiązanie:** Integracja z Gemini API to **jedyny ruch**, który umożliwia resztę journey'u. Bez prawdziwego AI:
 - Nie ma sensu budować kont (po co wracać?)
-- Nie ma sensu budować płatności (za co płacić?)
 - Nie ma sensu budować emaili (po co przypominać o narzędziu, które nie działa?)
 
 ### Quick Wins – zmiany, które poprawią konwersję natychmiast
@@ -538,11 +478,9 @@ graph LR
 - [ ] Day 7 Return Rate: ___% (target: >30%)
 - [ ] Generacje per user per tydzień: ___ (target: >3)
 
-### Monthly Metrics (po wdrożeniu kont i płatności)
+### Monthly Metrics (po wdrożeniu kont)
 - [ ] Sign-up conversion: ___% (target: >10% z landing)
-- [ ] Trial-to-Paid Conversion: ___% (target: >5%)
-- [ ] Churn Rate: ___% (target: <5%)
-- [ ] MRR: ___ zł (target: rosnący m/m)
+- [ ] Day 30 Return Rate: ___% (target: >20%)
 
 ---
 
@@ -556,17 +494,16 @@ graph LR
 
 ```mermaid
 graph TD
-    QW[Quick Wins - localStorage + banner + templates] --> AI[P0: OpenAI Integration + Backend Proxy]
+    QW[Quick Wins - localStorage + banner + templates] --> AI[P0: Gemini API Integration + Backend Proxy]
     AI --> AUTH[P1: Supabase Auth + Dashboard]
     AUTH --> HIST[P1: Historia opisów]
     HIST --> EMAIL[P2: Email sequences]
-    EMAIL --> PAY[P2: Stripe + Rate Limiting]
-    PAY --> OPT[P3: Analityka + Roczny plan + A/B testy]
+    EMAIL --> OPT[P3: Analityka + A/B testy]
 
     style QW fill:#00B894,color:white
     style AI fill:#E17055,color:white
     style AUTH fill:#74B9FF,color:white
-    style PAY fill:#FDCB6E,color:#333
+    style OPT fill:#FDCB6E,color:#333
 ```
 
-**Sekwencja jest kluczowa:** Nie buduj kont, zanim AI nie generuje wartości. Nie buduj płatności, zanim konta nie mają retencji. Nie buduj analityki, zanim nie ma co mierzyć.
+**Sekwencja jest kluczowa:** Nie buduj kont, zanim AI nie generuje wartości. Nie buduj emaili, zanim konta nie mają retencji. Nie buduj analityki, zanim nie ma co mierzyć.

@@ -1,13 +1,13 @@
 # CaptionForge – Plan Techniczny (Historyczny)
 
-> ⚠️ **Uwaga:** Ten dokument opisuje **oryginalny plan wersji Vanilla HTML/CSS/JS** (faza MVP, marzec 2026). Aplikacja została następnie zmigrowana na **Next.js 14 App Router + TypeScript strict + Tailwind CSS**. Kod historycznej wersji zachowany jest w [`vanilla web/`](../vanilla%20web), aktualna implementacja znajduje się w [`code/`](../code).
+> ⚠️ **Uwaga:** Ten dokument opisuje **oryginalny plan wersji Vanilla HTML/CSS/JS** (faza MVP, marzec 2026). Aplikacja została następnie zmigrowana na **Next.js 14 App Router + TypeScript strict + Tailwind CSS**. Kod historycznej wersji zachowany jest w [`vanilla web/`](../../vanilla%20web), aktualna implementacja znajduje się w [`code/`](../../code).
 >
 > **Sekcje poniżej zachowują wartość referencyjną:**
-> - **Design system** (kolory, typografia, breakpointy) — nadal aktualny, zaimplementowany jako CSS vars w [`code/src/app/globals.css`](../code/src/app/globals.css) i mapowany w [`code/tailwind.config.ts`](../code/tailwind.config.ts)
-> - **Struktura sekcji strony** (navbar → hero → features → generator → FAQ → footer) — zachowana 1:1 w [`code/src/app/page.tsx`](../code/src/app/page.tsx)
+> - **Design system** (kolory, typografia, breakpointy) — nadal aktualny, zaimplementowany jako CSS vars w [`code/src/app/globals.css`](../../code/src/app/globals.css) i mapowany w [`code/tailwind.config.ts`](../../code/tailwind.config.ts)
+> - **Struktura sekcji strony** (navbar → hero → features → generator → FAQ → footer) — zachowana 1:1 w [`code/src/app/page.tsx`](../../code/src/app/page.tsx)
 > - **Strategy Pattern** — zastąpiony Route Handlerem `/api/generate` z fallbackiem na mock
 >
-> Zaktualizowaną dokumentację techniczną znajdziesz w [`technical-documentation.md`](technical-documentation.md).
+> Zaktualizowaną dokumentację techniczną znajdziesz w [`../tech/technical-documentation.md`](../tech/technical-documentation.md).
 
 ---
 
@@ -17,7 +17,7 @@
 
 **Stack (historyczny):** Czysty HTML5 + CSS3 + Vanilla JavaScript (zero frameworków)
 **Stack (aktualny):** Next.js 14 App Router + React 18 + TypeScript strict + Tailwind CSS v3 + Zod
-**Lokalizacja kodu:** [`code/`](../code) (Next.js) · [`vanilla web/`](../vanilla%20web) (historyczne)
+**Lokalizacja kodu:** [`code/`](../../code) (Next.js) · [`vanilla web/`](../../vanilla%20web) (historyczne)
 
 ---
 
@@ -48,9 +48,8 @@ plans/captionforge/
 3. **Features** – 3-4 kluczowe funkcje z ikonami
 4. **How It Works** – 3 kroki z numeracją
 5. **Generator (Try It)** – Działający prototyp generatora
-6. **Pricing** – 2 plany: Free i Pro
-7. **FAQ** – Najczęstsze pytania
-8. **Footer** – Linki, copyright
+6. **FAQ** – Najczęstsze pytania
+7. **Footer** – Linki, copyright
 
 ### Sekcja Generatora (kluczowa):
 
@@ -187,16 +186,16 @@ Tabela pokazuje, jak elementy oryginalnego planu zostały zrealizowane w aktualn
 
 | Element planu (Vanilla) | Realizacja w Next.js |
 |-------------------------|----------------------|
-| `index.html` — monolit | [`src/app/page.tsx`](../code/src/app/page.tsx) + sekcje jako osobne komponenty w [`src/components/features/`](../code/src/components/features) |
-| `css/styles.css` — ~2000 linii | Tailwind CSS + design tokens w [`src/app/globals.css`](../code/src/app/globals.css) + [`tailwind.config.ts`](../code/tailwind.config.ts) |
-| `js/app.js` — nawigacja, scroll, FAQ | Logika rozproszona do Client Components: [`Navbar`](../code/src/components/features/navbar.tsx), [`FAQ`](../code/src/components/features/faq.tsx), native CSS `scroll-behavior: smooth` |
-| `js/generator.js` — Strategy Pattern | **Serwerowy Route Handler** [`src/app/api/generate/route.ts`](../code/src/app/api/generate/route.ts) + client fetch w [`GeneratorSection`](../code/src/components/features/generator/generator-section.tsx). Klucz API w ENV zamiast hardkodu. |
-| `js/templates.js` — baza mocków | [`src/lib/mock-templates.ts`](../code/src/lib/mock-templates.ts) (fallback serwerowy) |
-| `js/features.js` — ThemeManager, HistoryManager, ExportManager, ProgressBar | Rozbite na hooks i komponenty: [`useTheme`](../code/src/hooks/useTheme.ts), [`useHistory`](../code/src/hooks/useHistory.ts), [`HistoryStorage`](../code/src/lib/history-storage.ts), [`exportTxt`](../code/src/lib/export-txt.ts), [`ProgressBar`](../code/src/components/ui/progress-bar.tsx) |
+| `index.html` — monolit | [`src/app/page.tsx`](../../code/src/app/page.tsx) + sekcje jako osobne komponenty w [`src/components/features/`](../../code/src/components/features) |
+| `css/styles.css` — ~2000 linii | Tailwind CSS + design tokens w [`src/app/globals.css`](../../code/src/app/globals.css) + [`tailwind.config.ts`](../../code/tailwind.config.ts) |
+| `js/app.js` — nawigacja, scroll, FAQ | Logika rozproszona do Client Components: [`Navbar`](../../code/src/components/features/navbar.tsx), [`FAQ`](../../code/src/components/features/faq.tsx), native CSS `scroll-behavior: smooth` |
+| `js/generator.js` — Strategy Pattern | **Serwerowy Route Handler** [`src/app/api/generate/route.ts`](../../code/src/app/api/generate/route.ts) + client fetch w [`GeneratorSection`](../../code/src/components/features/generator/generator-section.tsx). Klucz API w ENV zamiast hardkodu. |
+| `js/templates.js` — baza mocków | [`src/lib/mock-templates.ts`](../../code/src/lib/mock-templates.ts) (fallback serwerowy) |
+| `js/features.js` — ThemeManager, HistoryManager, ExportManager, ProgressBar | Rozbite na hooks i komponenty: [`useTheme`](../../code/src/hooks/useTheme.ts), [`useHistory`](../../code/src/hooks/useHistory.ts), [`HistoryStorage`](../../code/src/lib/history-storage.ts), [`exportTxt`](../../code/src/lib/export-txt.ts), [`ProgressBar`](../../code/src/components/ui/progress-bar.tsx) |
 | Design system (kolory, breakpointy) | Bez zmian — CSS Custom Properties w `globals.css` + Tailwind theme |
 | `prompt()` / `alert()` dla błędów | `Toast` + state machine w `GeneratorSection` |
 | Klucz Gemini w JS (`CONFIG`) | **Eliminacja problemu** — klucz w `.env.local` / `process.env.GEMINI_API_KEY`, klient wywołuje proxy |
 | Brak walidacji wejścia | `Zod.safeParse` po stronie Route Handlera, 400 z detalami przy błędzie |
 | Brak rate-limit | Soft rate-limit 30 req/h per IP (in-memory) — TODO: Upstash/KV |
 
-> Pełna specyfikacja migracji: [`plans/szkielet-nextjs-captionforge.md`](../plans/szkielet-nextjs-captionforge.md).
+> Pełna specyfikacja migracji: [`plans/szkielet-nextjs-captionforge.md`](../plans/PLAN_szkielet-nextjs-captionforge.md).
