@@ -140,7 +140,7 @@ Zgodnie z regułą [`dev-coding-rules.md`](../../kilocode/rules/dev-coding-rules
 | Komponent | Typ | Uzasadnienie |
 |-----------|-----|--------------|
 | [`app/page.tsx`](../../code/src/app/page.tsx) | **Server** | Statyczna kompozycja sekcji |
-| [`features/navbar.tsx`](../../code/src/components/features/navbar.tsx) | Server (opakowuje `ThemeToggle` CC) | Markup statyczny + leaf CC |
+| [`features/navbar.tsx`](../../code/src/components/features/navbar.tsx) | **Client** | Scroll listener (`useEffect`), mobile menu state (`useState`), smooth-scroll `onClick` — zawiera leaf CC `ThemeToggle` |
 | [`features/hero.tsx`](../../code/src/components/features/hero.tsx) | **Server** | Statyczna treść |
 | [`features/features-grid.tsx`](../../code/src/components/features/features-grid.tsx) | **Server** | |
 | [`features/how-it-works.tsx`](../../code/src/components/features/how-it-works.tsx) | **Server** | |
@@ -229,7 +229,7 @@ Sekcje renderowane w [`page.tsx`](../../code/src/app/page.tsx):
 
 | Sekcja | ID / Komponent | Typ |
 |--------|----------------|-----|
-| Navbar | [`Navbar`](../../code/src/components/features/navbar.tsx) | Server + leaf CC (`ThemeToggle`) |
+| Navbar | [`Navbar`](../../code/src/components/features/navbar.tsx) | **Client** (zawiera `ThemeToggle`) |
 | Hero | [`Hero`](../../code/src/components/features/hero.tsx) | Server |
 | Features | [`FeaturesGrid`](../../code/src/components/features/features-grid.tsx) | Server |
 | How It Works | [`HowItWorks`](../../code/src/components/features/how-it-works.tsx) | Server |
@@ -251,8 +251,9 @@ Serwerowy **proxy** do Gemini API — rozwiązuje krytyczne ryzyko z Planu 1 aud
 - Odczyt `GEMINI_API_KEY` z `process.env` (nigdy nie trafia do klienta)
 - Walidacja payloadu przez `Zod` (wspólna z typami klienta)
 - Soft rate-limit in-memory per IP: **30 zapytań / godzinę**
-- Wywołanie Gemini 2.0 Flash Lite z `temperature: 0.8`, `maxOutputTokens: 2048`
-- Fallback na `generateMockResult()` przy: braku klucza / HTTP 429 / błędzie parsowania
+- Wywołanie Gemini 2.0 Flash Lite z `temperature: 0.7`, `maxOutputTokens: 4096`, `responseMimeType: "application/json"`, `responseSchema` (Structured Output)
+- Retry serwer (3×, backoff 500/1500 ms + jitter ±250 ms) dla statusów 429/5xx i błędów sieciowych; `AbortController` 25 s per próba
+- Walidacja odpowiedzi Gemini przez Zod (`GenerateResultPayloadSchema`); fallback na `generateMockResult()` przy: braku klucza / wyczerpaniu retry / naruszeniu kontraktu Zod / `finishReason: MAX_TOKENS`
 - Błędy transportowe → HTTP 502 z komunikatem
 
 **Odpowiedź:** `GenerateResult` z polem `source: "gemini" | "mock"` informującym UI o źródle.
@@ -360,7 +361,7 @@ ODPOWIEDZ W FORMACIE JSON — TYLKO JSON:
 | Brak `GEMINI_API_KEY` | Zwrot `generateMockResult()` (tryb dev) |
 | Rate limit lokalny (30/h/IP) | HTTP 429 + PL komunikat |
 | HTTP 400 (niepoprawny payload) | `Zod` zwraca szczegóły błędu |
-| HTTP 429/500/502/503/504 z Gemini | Retry serwer (3×, backoff 500/1500/4000 ms + jitter); po wyczerpaniu → fallback mock z `source: "mock"` |
+| HTTP 429/500/502/503/504 z Gemini | Retry serwer (3×, backoff 500/1500 ms + jitter ±250 ms); po wyczerpaniu → fallback mock z `source: "mock"` |
 | Timeout >25 s na próbę | `AbortController` przerywa, traktowane jak błąd sieciowy → retry; po wyczerpaniu → fallback mock |
 | Błąd parsowania JSON | Fallback na mock w [`parseGeminiResponse`](../../code/src/lib/gemini-prompt.ts) |
 | Walidacja Zod odpowiedzi (`GenerateResultPayloadSchema`) fail | Fallback mock z `source: "mock"` (np. <3 captions, <10 hashtags) |

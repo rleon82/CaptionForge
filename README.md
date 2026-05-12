@@ -2,7 +2,7 @@
 
 Generator angażujących opisów i hasztagów dla mediów społecznościowych, napędzany AI (Google Gemini 2.0 Flash Lite). Aplikacja Next.js 14 (App Router) z landingiem + generatorem, backendowym proxy ukrywającym klucz API oraz automatycznym fallbackiem na szablony mockowe.
 
-> **Wersja:** 2.0 · **Status:** MVP na Next.js + TypeScript · **Metodyka:** Spec Driven Development (SDD)
+> **Wersja:** 2.0 · **Status:** Wdrożona · **Metodyka:** Spec Driven Development (SDD)
 
 ---
 
@@ -11,8 +11,6 @@ Generator angażujących opisów i hasztagów dla mediów społecznościowych, n
 ```
 captionforge/
 ├── README.md                    # Ten plik — indeks projektu
-├── implemented_plans.md         # Rejestr planów SDD (co jest zaplanowane / wdrożone)
-├── implemented_features.md      # Rejestr funkcjonalności (co jest zaimplementowane)
 ├── .gitignore
 │
 ├── code/                        # Aplikacja Next.js 14 (produkcyjna)
@@ -21,7 +19,7 @@ captionforge/
 │   │   ├── components/          # Komponenty React (ui/ + features/)
 │   │   ├── hooks/               # Custom React hooks
 │   │   ├── lib/                 # Utilsy, helpery, konfiguracje
-│   │   ├── services/            # Logika komunikacji z API
+│   │   ├── services/            # Zarezerwowane — przyszła warstwa serwisów
 │   │   ├── types/               # Typy TypeScript
 │   │   └── constants/           # Stałe, enumy, konfiguracja
 │   ├── package.json
@@ -29,8 +27,14 @@ captionforge/
 │
 ├── docs/                        # Dokumentacja projektu (SDD)
 │   ├── README.md                # Indeks dokumentacji
-│   ├── architecture/            # Architektura systemu, ADR-y
-│   ├── business/                # Wymagania biznesowe, JTBD, User Journey
+│   ├── architecture/            # Architektura systemu, ADR-y, rejestry
+│   │   ├── system_overview.md   # Wysokopoziomowy opis architektury
+│   │   ├── adr_001_nextjs-app-router.md
+│   │   ├── adr_002_gemini-api.md
+│   │   ├── adr_003_system-fonts.md
+│   │   ├── implemented_features.md  # Rejestr wdrożonych funkcjonalności
+│   │   └── implemented_plans.md     # Rejestr wdrożonych planów SDD
+│   ├── business/                # JTBD, User Journey Map, persony
 │   ├── tech/                    # Dokumentacja techniczna stosu
 │   ├── plans/                   # Plany implementacyjne (PLAN_*.md)
 │   └── roles/                   # Dokumentacja ról projektowych
@@ -76,7 +80,8 @@ npm run build      # Produkcyjny build — musi przejść
 | Dokument | Opis |
 |----------|------|
 | 📖 [docs/README.md](docs/README.md) | Indeks dokumentacji — spis treści, linki do wszystkich sekcji |
-| 🏛️ [docs/architecture/](docs/architecture) | Architektura systemu, ADR-y, historyczny plan Vanilla |
+| 🔭 [docs/architecture/system_overview.md](docs/architecture/system_overview.md) | Wysokopoziomowy opis architektury: stack, diagramy, integracje |
+| 🏛️ [docs/architecture/](docs/architecture) | ADR-y (001/002/003), rejestry wdrożonych funkcji i planów |
 | 💼 [docs/business/](docs/business) | JTBD, User Journey Map, persony użytkowników |
 | ⚙️ [docs/tech/technical-documentation.md](docs/tech/technical-documentation.md) | Pełna dokumentacja techniczna Next.js, Gemini, diagramy Mermaid |
 | 📋 [docs/plans/](docs/plans) | Plany implementacyjne SDD (`PLAN_*.md`) |
@@ -99,5 +104,5 @@ npm run build      # Produkcyjny build — musi przejść
 
 | Plik | Opis |
 |------|------|
-| 📋 [implemented_plans.md](implemented_plans.md) | Lista wszystkich planów SDD z statusami `[x]`/`[ ]` |
-| ✅ [implemented_features.md](implemented_features.md) | Inwentarz zaimplementowanych funkcjonalności z linkami do kodu |
+| 📋 [docs/architecture/implemented_plans.md](docs/architecture/implemented_plans.md) | Lista wszystkich planów SDD z statusami `[x]` — wszystkie zrealizowane |
+| ✅ [docs/architecture/implemented_features.md](docs/architecture/implemented_features.md) | Inwentarz zaimplementowanych funkcjonalności z linkami do kodu |

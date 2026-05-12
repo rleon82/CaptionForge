@@ -1,31 +1,28 @@
-# ✍️ CaptionForge — Szkielet Next.js
+# ✍️ CaptionForge — Aplikacja Next.js
 
-> **Stack:** Next.js 14 App Router · React 18 · TypeScript strict · Tailwind CSS v3  
-> **Status:** Szkielet gotowy do instalacji i uruchomienia  
-> **Zgodność:** `dev-coding-rules.md` (Next.js App Router + TS strict + Tailwind)
+> **Stack:** Next.js 14 App Router · React 18 · TypeScript strict · Tailwind CSS v3
+> **Status:** Wdrożona · **Zgodność:** [`dev-coding-rules.md`](../kilocode/rules/dev-coding-rules.md)
 
 ---
 
 ## 🚀 Szybki start
 
 ```bash
-# 1. Wejdź do katalogu
-cd szkielet
+# 1. Wejdź do katalogu aplikacji
+cd code
 
 # 2. Zainstaluj zależności
 npm install
 
-# 3. Skonfiguruj klucz API
-cp .env.local.example .env.local
-# Edytuj .env.local i wstaw swój klucz Gemini:
-# GEMINI_API_KEY=AIzaSy...
+# 3. Skonfiguruj klucz API (opcjonalne — bez klucza działa mock)
+echo "GEMINI_API_KEY=AIzaSy..." > .env.local
 
 # 4. Uruchom serwer dev
 npm run dev
 # Aplikacja dostępna na http://localhost:3000
 ```
 
-> ⚠️ **Klucz API jest opcjonalny.** Bez niego generator działa w trybie mock (szablony).  
+> ⚠️ **Klucz API jest opcjonalny.** Bez niego generator działa w trybie mock (szablony).
 > Klucz pobierz z: https://aistudio.google.com/app/apikey
 
 ---
@@ -43,11 +40,11 @@ src/
 ├── components/
 │   ├── ui/                 # Button, ThemeToggle, ProgressBar, Toast
 │   └── features/
-│       ├── navbar.tsx
+│       ├── navbar.tsx      # Client Component (scroll listener, mobile menu)
 │       ├── hero.tsx
 │       ├── features-grid.tsx
 │       ├── how-it-works.tsx
-│       ├── faq.tsx
+│       ├── faq.tsx         # Client Component (accordion)
 │       ├── cta-bottom.tsx
 │       ├── footer.tsx
 │       ├── generator/      # GeneratorSection (Client) + Form + Results
@@ -88,16 +85,16 @@ GEMINI_API_KEY=AIzaSy...
 
 ### Zmiana modelu:
 
-W [`src/app/api/generate/route.ts`](src/app/api/generate/route.ts:19):
+W [`src/app/api/generate/route.ts`](src/app/api/generate/route.ts):
 ```typescript
-const geminiModel = "gemini-2.0-flash"; // zmień na gemini-2.5-pro itp.
+const geminiModel = "gemini-2.0-flash-lite"; // zmień na np. "gemini-2.5-flash"
 ```
 
 ---
 
 ## 🎨 Design System
 
-Kolory z `docs/plan.md` przez CSS Custom Properties:
+Kolory z [`../docs/architecture/legacy-vanilla-plan.md`](../docs/architecture/legacy-vanilla-plan.md) przez CSS Custom Properties:
 
 | Token | Light | Dark |
 |-------|-------|------|
@@ -106,7 +103,7 @@ Kolory z `docs/plan.md` przez CSS Custom Properties:
 | `--color-surface` | `#FFFFFF` | `#1A1A2E` |
 | `--color-text-primary` | `#2D3436` | `#E2E8F0` |
 
-Dark mode: `[data-theme="dark"]` na `<html>` + klasa Tailwind `dark`.  
+Dark mode: `[data-theme="dark"]` na `<html>` + klasa Tailwind `dark`.
 Anti-FOUC: inline script w `<head>` czyta `localStorage` przed hydratacją.
 
 ---
@@ -127,8 +124,7 @@ npx tsc --noEmit  # Sprawdź TypeScript
 
 | Dokument | Opis |
 |----------|------|
-| [`plans/szkielet-nextjs-captionforge.md`](../plans/szkielet-nextjs-captionforge.md) | Master plan — architektura, 8 planów atomowych |
-| [`kilocode/rules/dev-coding-rules.md`](../.kilocode/rules/dev-coding-rules.md) | Obligatoryjne reguły kodowania |
-| [`docs/plan.md`](../docs/plan.md) | Design system i breakpointy |
-| [`plans/gemini-api-integration.md`](../plans/gemini-api-integration.md) | Specyfikacja integracji Gemini |
-| [`docs/README.md`](../docs/README.md) | Dokumentacja obecnego Vanilla MVP |
+| [`../docs/plans/PLAN_szkielet-nextjs-captionforge.md`](../docs/plans/PLAN_szkielet-nextjs-captionforge.md) | Master plan — architektura, 8 planów atomowych |
+| [`../docs/tech/technical-documentation.md`](../docs/tech/technical-documentation.md) | Pełna dokumentacja techniczna Next.js, Gemini, diagramy |
+| [`../docs/architecture/system_overview.md`](../docs/architecture/system_overview.md) | Wysokopoziomowy opis architektury |
+| [`../docs/README.md`](../docs/README.md) | Indeks całej dokumentacji projektu |

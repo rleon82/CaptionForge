@@ -24,7 +24,7 @@ export function Hero() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium mb-6 bg-[rgb(var(--color-primary)/0.1)] text-[rgb(var(--color-primary))] border border-[rgb(var(--color-primary)/0.2)]">
               <span>🚀</span>
-              <span>Napędzany przez Google Gemini 2.5 Flash</span>
+              <span>Napędzany przez Google Gemini 2.0 Flash Lite</span>
             </div>
 
             {/* Headline */}

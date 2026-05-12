@@ -12,7 +12,7 @@ const FAQ_ITEMS = [
   {
     question: "Jak dobre są opisy generowane przez AI?",
     answer:
-      "CaptionForge używa Google Gemini 2.5 Flash — jednego z najlepszych modeli AI do generowania tekstu. Opisy są dopasowane do wybranej platformy, tonu głosu i Twojej niszy. Zazwyczaj wymagają minimalnej edycji lub można je użyć bezpośrednio.",
+      "CaptionForge używa Google Gemini 2.0 Flash Lite — jednego z najszybszych modeli AI do generowania tekstu. Opisy są dopasowane do wybranej platformy, tonu głosu i Twojej niszy. Zazwyczaj wymagają minimalnej edycji lub można je użyć bezpośrednio.",
   },
   {
     question: "Skąd pochodzą hasztagi?",

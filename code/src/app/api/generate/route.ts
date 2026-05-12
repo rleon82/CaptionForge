@@ -40,7 +40,7 @@ function checkRateLimit(ip: string): boolean {
 
 // ── Retry config ─────────────────────────────────────────────────────────────
 const RETRYABLE_STATUSES = new Set([429, 500, 502, 503, 504]);
-const BACKOFF_MS = [500, 1500, 4000] as const;
+const BACKOFF_MS = [500, 1500] as const; // dwa backoffy między 3 próbami (attempt 1→2 i 2→3)
 const TIMEOUT_MS = 25_000;
 const MAX_ATTEMPTS = 3;
 

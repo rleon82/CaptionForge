@@ -28,7 +28,7 @@ Główne powody wyboru Next.js 14 App Router:
 
 **Pozytywne:**
 - ✅ Klucz `GEMINI_API_KEY` nigdy nie trafia do klienta (rozwiązany krytyczny problem z Vanilla).
-- ✅ Bundle JS zredukowany o ~60% dzięki Server Components (FAQ + Generator pozostają CC, reszta SC).
+- ✅ Bundle JS zredukowany o ~60% dzięki Server Components (FAQ, Navbar, Generator i komponenty historii pozostają CC; Hero, Features, How It Works, CTA, Footer to SC).
 - ✅ Walidacja Zod współdzielona client + server.
 - ✅ Łatwy deploy na Vercel; environment variables management.
 

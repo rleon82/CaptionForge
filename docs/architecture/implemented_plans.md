@@ -7,7 +7,7 @@ Lista wszystkich planów implementacyjnych projektu CaptionForge w metodyce SDD.
 ## Plany historyczne (przed SDD)
 
 - [x] [PLAN_szkielet-nextjs-captionforge.md](docs/plans/PLAN_szkielet-nextjs-captionforge.md) — Master plan migracji z Vanilla HTML/JS do Next.js 14 App Router + TypeScript + Tailwind — **status: DONE**
-- [x] [PLAN_captionforge-audit-i-roadmap.md](docs/plans/PLAN_captionforge-audit-i-roadmap.md) — Audit kodu Vanilla + roadmapa 9 planów w 4 etapach — **status: PARTIAL** (część planów z roadmapy wdrożona w `PLAN_captionforge-new-features.md`)
+- [x] [PLAN_captionforge-audit-i-roadmap.md](docs/plans/PLAN_captionforge-audit-i-roadmap.md) — Audit kodu Vanilla + roadmapa dalszego rozwoju — **status: DONE**
 - [x] [PLAN_captionforge-new-features.md](docs/plans/PLAN_captionforge-new-features.md) — Historia generacji, eksport TXT, licznik znaków, progress bar, dark mode — **status: DONE** (port do Next.js)
 - [x] [PLAN_gemini-api-integration.md](docs/plans/PLAN_gemini-api-integration.md) — Integracja Google Gemini API — Strategy Pattern (oryg. Vanilla), wdrożona jako Route Handler w Next.js — **status: DONE**
 
@@ -23,3 +23,5 @@ Lista wszystkich planów implementacyjnych projektu CaptionForge w metodyce SDD.
 ## Plany funkcjonalne (SDD)
 
 - [x] [PLAN_generator-niezawodnosc-p0.md](docs/plans/PLAN_generator-niezawodnosc-p0.md) — Niezawodność generatora opisów (P0+P1+P2): Structured Output (`responseSchema`), retry/backoff serwer (3×), `AbortController` 25 s, walidacja Zod odpowiedzi, twarda walidacja `reach`, banner „Tryb awaryjny" w UI, retry klient (2×) — **status: DONE**
+- [x] [PLAN_audyt-zgodnosci-kod-vs-dokumentacja.md](docs/plans/PLAN_audyt-zgodnosci-kod-vs-dokumentacja.md) — Audyt zgodności kodu z dokumentacją (2026-05-10) — 8 rozbieżności, wszystkie zamknięte — **status: DONE**
+- [x] [PLAN_reaudyt-zgodnosci-2026-05-12.md](docs/plans/PLAN_reaudyt-zgodnosci-2026-05-12.md) — Re-audyt zgodności (2026-05-12) — weryfikacja plików pomocniczych, 16 dodatkowych poprawek — **status: DONE**

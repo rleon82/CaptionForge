@@ -5,7 +5,7 @@ Rola **Architect** w projekcie CaptionForge — strażnik decyzji architektonicz
 ## Zakres odpowiedzialności
 
 - **Decyzje architektoniczne** — pisanie ADR-ów (Architecture Decision Records) w [`docs/architecture/`](../../architecture).
-- **Wysokopoziomowy opis systemu** — utrzymanie `docs/architecture/system_overview.md` (do utworzenia w Planie F).
+- **Wysokopoziomowy opis systemu** — utrzymanie [`docs/architecture/system_overview.md`](../../architecture/system_overview.md).
 - **Stos technologiczny** — utrzymanie [`docs/tech/technical-documentation.md`](../../tech/technical-documentation.md) jako jedynego źródła prawdy o architekturze Next.js, Server/Client Components, Route Handlerach.
 - **Integracje zewnętrzne** — Google Gemini API ([`code/src/app/api/generate/route.ts`](../../../code/src/app/api/generate/route.ts), [`code/src/lib/gemini-prompt.ts`](../../../code/src/lib/gemini-prompt.ts)); przyszłe: backend, baza danych.
 - **Granice modułów** — kontrakty między [`code/src/app/`](../../../code/src/app), [`code/src/components/`](../../../code/src/components), [`code/src/services/`](../../../code/src/services), [`code/src/lib/`](../../../code/src/lib).
@@ -15,7 +15,7 @@ Rola **Architect** w projekcie CaptionForge — strażnik decyzji architektonicz
 
 | Artefakt | Lokalizacja | Status |
 |----------|-------------|--------|
-| Architecture Decision Records | [`docs/architecture/`](../../architecture) | ✅ Wdrożone (adr_001, adr_002) |
+| Architecture Decision Records | [`docs/architecture/`](../../architecture) | ✅ Wdrożone (adr_001, adr_002, adr_003) |
 | System Overview | [`docs/architecture/system_overview.md`](../../architecture/system_overview.md) | ✅ Wdrożony |
 | Dokumentacja techniczna | [`docs/tech/technical-documentation.md`](../../tech/technical-documentation.md) | ✅ Aktualna (kwiecień 2026) |
 | Historyczny plan Vanilla | [`docs/architecture/legacy-vanilla-plan.md`](../../architecture/legacy-vanilla-plan.md) | ✅ Zachowany jako kontekst |

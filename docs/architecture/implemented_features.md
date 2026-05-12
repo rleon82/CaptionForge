@@ -8,7 +8,7 @@ Inwentarz zaimplementowanych funkcjonalności projektu CaptionForge. Każda funk
 
 - **Status:** DONE
 - **Plan:** [PLAN_szkielet-nextjs-captionforge.md](docs/plans/PLAN_szkielet-nextjs-captionforge.md)
-- **Opis:** Pełna strona landing page z sekcjami: Navbar (z ThemeToggle), Hero (gradient, CTA, mockup), Features (6 kart), How It Works (3 kroki), FAQ (accordion), CTA Bottom, Footer. Wszystkie sekcje jako Server Components z wyjątkiem FAQ (Client — accordion state) i Navbar (opakowuje leaf CC ThemeToggle).
+- **Opis:** Pełna strona landing page z sekcjami: Navbar (z ThemeToggle), Hero (gradient, CTA, mockup), Features (6 kart), How It Works (3 kroki), FAQ (accordion), CTA Bottom, Footer. Wszystkie sekcje jako Server Components z wyjątkiem FAQ (Client — accordion state) i Navbar (Client — scroll listener `useEffect`, mobile menu state `useState`, smooth-scroll `onClick`; zawiera leaf CC `ThemeToggle`).
 - **Pliki:**
   - [`code/src/app/page.tsx`](code/src/app/page.tsx) — kompozycja sekcji (Server Component)
   - [`code/src/app/layout.tsx`](code/src/app/layout.tsx) — root layout + anti-FOUC script

@@ -21,7 +21,7 @@ Główne powody wyboru Gemini 2.0 Flash Lite:
 1. **Najniższa cena** wśród managed providers — 1000 generacji ≈ $0.30 (~1.20 zł).
 2. **Free tier** wystarczający dla developmentu i wczesnego MVP (15 RPM, 1M TPM, 1500 RPD).
 3. **Jakość polskiego** — w testach ad-hoc dorównywała GPT-4o (subiektywna ocena solo-dewelopera; do walidacji z personami).
-4. **Native JSON mode** (`responseMimeType: "application/json"`) — eliminuje regex/parsing markdown blocks (choć implementacja nadal ma fallback z `parseGeminiResponse` dla starszych modeli).
+4. **Native JSON mode** (`responseMimeType: "application/json"`) + `responseSchema` (Structured Output) — wymuszają kontrakt JSON od Gemini. `parseGeminiResponse` dodatkowo waliduje odpowiedź przez Zod (`GenerateResultPayloadSchema`) i przy naruszeniu kontraktu lub błędzie Gemini wykonuje świadomy fallback do mock-templates (szczegóły w sekcji „Rozszerzenie — Polityka Resilience" poniżej).
 5. **Wsparcie streaming** — przygotowanie pod przyszłe upgrade do Gemini Pro z streaming responses.
 
 ## Consequences

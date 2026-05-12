@@ -10,7 +10,7 @@ Rola **Developer** w projekcie CaptionForge — wykonawca planów SDD. Zamienia 
   ```bash
   cd code && npx tsc --noEmit && npm run lint && npm run build
   ```
-- **Aktualizacja rejestrów** [`implemented_plans.md`](../../../implemented_plans.md) i [`implemented_features.md`](../../../implemented_features.md) po każdym wdrożeniu (krok 5 workflow).
+- **Aktualizacja rejestrów** [`implemented_plans.md`](../../architecture/implemented_plans.md) i [`implemented_features.md`](../../architecture/implemented_features.md) po każdym wdrożeniu (krok 5 workflow).
 - **Zakaz rozszerzania zakresu (YAGNI)** — implementacja wyłącznie tego, co jest w sekcji 2.1 planu.
 - **Zakaz refaktorów poza planem** — modyfikacja wyłącznie plików z sekcji 5.1 planu.
 
@@ -24,8 +24,8 @@ Rola **Developer** w projekcie CaptionForge — wykonawca planów SDD. Zamienia 
 | Workflow implementacji | [`kilocode/rules/dev-implement-workflow.md`](../../../kilocode/rules/dev-implement-workflow.md) | ✅ 6-krokowy proces |
 | Konfiguracja TypeScript | [`code/tsconfig.json`](../../../code/tsconfig.json) | ✅ Strict + noUncheckedIndexedAccess |
 | Zależności | [`code/package.json`](../../../code/package.json) | ✅ Next 14.2, React 18, Zod 3 |
-| Rejestr planów | [`implemented_plans.md`](../../../implemented_plans.md) | ✅ Aktualizowany po każdym planie |
-| Rejestr funkcjonalności | [`implemented_features.md`](../../../implemented_features.md) | ✅ Aktualizowany po każdym planie |
+| Rejestr planów | [`implemented_plans.md`](../../architecture/implemented_plans.md) | ✅ Aktualizowany po każdym planie |
+| Rejestr funkcjonalności | [`implemented_features.md`](../../architecture/implemented_features.md) | ✅ Aktualizowany po każdym planie |
 
 ## Typowe zadania w cyklu SDD
 
@@ -33,5 +33,5 @@ Rola **Developer** w projekcie CaptionForge — wykonawca planów SDD. Zamienia 
 2. **Krok 2 (Verify)** — zweryfikuj 5 punktów warunku wstępnego z [`dev-implement-workflow.md`](../../../kilocode/rules/dev-implement-workflow.md) sekcja 1; jeśli któryś niespełniony — `ask_followup_question` zamiast improwizacji.
 3. **Krok 3 (Implement)** — wykonaj sekwencyjnie wszystkie kroki z sekcji 6 planu używając `apply_diff` (preferowane), `write_to_file`, `execute_command` (np. `git mv`); modyfikuj wyłącznie pliki z sekcji 5.1 planu.
 4. **Krok 4 (Test)** — uruchom `cd code && npx tsc --noEmit && npm run lint && npm run build`; każde KA z sekcji 7 planu z dowodem (komenda + exit code lub log).
-5. **Krok 5 (Update Registries)** — zmień `[ ]` → `[x]` w [`implemented_plans.md`](../../../implemented_plans.md), aktualizuj/dodaj sekcję w [`implemented_features.md`](../../../implemented_features.md) (jeśli plan dotyczy kodu, nie meta-warstwy).
+5. **Krok 5 (Update Registries)** — zmień `[ ]` → `[x]` w [`implemented_plans.md`](../../architecture/implemented_plans.md), aktualizuj/dodaj sekcję w [`implemented_features.md`](../../architecture/implemented_features.md) (jeśli plan dotyczy kodu, nie meta-warstwy).
 6. **Krok 6 (Report)** — zgłoś ukończenie przez `attempt_completion` w formacie z [`dev-implement-workflow.md`](../../../kilocode/rules/dev-implement-workflow.md) sekcja 5.
